@@ -1,0 +1,14 @@
+// #genai: Post-signup setup. Reached only when a session exists but the profile step is pending.
+import { Stack } from 'expo-router';
+
+export default function OnboardingLayout() {
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: 'transparent' },
+        animation: 'slide_from_right',
+      }}
+    />
+  );
+}
