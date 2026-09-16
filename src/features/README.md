@@ -18,4 +18,5 @@ Rules that keep this scalable:
 - A feature may import from `src/` shared layers (`components`, `lib`, `api`, `theme`).
 - A feature should **not** import from another feature's internals. If two features need the
   same thing, promote it to a shared layer in `src/`.
-- Promote a component to `src/components/ui` only once a second feature needs it.
+- Onboarding step 3 is allowed to compose Card Nest's `AddCardScreen` because that is the real add flow, not a copy.
+- SwipeMax and chat read the nest through Express (`/api/swipemax/*`), not by importing Card Nest internals.

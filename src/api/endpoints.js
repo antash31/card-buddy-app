@@ -32,4 +32,13 @@ export const endpoints = {
     root: '/user-cards',
     remove: (userCardId) => `/user-cards/${userCardId}/remove`,
   },
+
+  swipemax: {
+    compare: '/swipemax/compare',
+    capConsumption: (capId) => `/swipemax/caps/${capId}/consumption`,
+    capSelfReport: (capId) => `/swipemax/caps/${capId}/self-report`,
+    chatSessions: '/swipemax/chat/sessions',
+    chatSession: (sessionId) => `/swipemax/chat/sessions/${sessionId}`,
+    chatMessages: (sessionId) => `/swipemax/chat/sessions/${sessionId}/messages`,
+  },
 };
