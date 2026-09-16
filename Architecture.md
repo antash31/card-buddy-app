@@ -40,7 +40,7 @@ without adding a check.
 ```
 app/(auth)/        welcome, sign-in, sign-up, forgot-password, verify-email
 app/onboarding/    identity, financial snapshot, optional cards, optimization goal
-app/(app)/         signed-in area — a Tabs navigator: index (Card Nest), add-card, profile
+app/(app)/         signed-in area — Tabs: index (Card Nest), swipemax, add-card, profile; chat has href: null
 ```
 
 `useAuthGate` (mounted once in the root layout) owns every redirect:

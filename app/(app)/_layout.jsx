@@ -18,8 +18,10 @@ export default function AppLayout() {
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Nest' }} />
+      <Tabs.Screen name="swipemax" options={{ title: 'SwipeMax' }} />
       <Tabs.Screen name="add-card" options={{ title: 'Add' }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile' }} />
+      <Tabs.Screen name="chat" options={{ href: null, title: 'Ask' }} />
     </Tabs>
   );
 }

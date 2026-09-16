@@ -132,6 +132,16 @@ export function TrashIcon(props) {
   );
 }
 
+/** SwipeMax — a ledger of three bars, tallest in the middle. */
+export function SwipeMaxIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Line x1="6" y1="16" x2="6" y2="11" />
+      <Line x1="12" y1="18" x2="12" y2="6" />
+      <Line x1="18" y1="16" x2="18" y2="9" />
+    </Glyph>
+  );
+}
 /** Card Nest — a stack of cards seen slightly from the side. */
 export function NestIcon(props) {
   return (

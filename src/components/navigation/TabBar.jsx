@@ -21,7 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { NestIcon, PlusIcon, UserIcon } from '@/components/icons';
+import { NestIcon, PlusIcon, SwipeMaxIcon, UserIcon } from '@/components/icons';
 import { useReduceMotion, useReduceTransparency } from '@/hooks/useMotionPreferences';
 import { fireHaptic } from '@/lib/haptics';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -30,6 +30,7 @@ import { springs, timings } from '@/theme/motion';
 // Keyed by route name so the bar's contents are declared here rather than inferred from options.
 const TABS = {
   index: { label: 'Nest', Icon: NestIcon },
+  swipemax: { label: 'SwipeMax', Icon: SwipeMaxIcon },
   'add-card': { label: 'Add', Icon: PlusIcon },
   profile: { label: 'Profile', Icon: UserIcon },
 };
