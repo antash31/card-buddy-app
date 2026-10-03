@@ -1,18 +1,21 @@
-// #genai: The Card Buddy mark — two plates, one behind the other.
+// #genai: The Card Buddy mark — a lit blue card in front of a pane of glass.
 //
-// Flat pine and hairlines rather than a gradient with white highlights. The offset plate is an
-// outline only, so the mark reads as one solid object with a second implied behind it, which is a
-// truer picture of a wallet than two competing filled shapes.
+// Two rounded plates, one behind the other: a frosted, outlined one rotated slightly back and to the
+// left, and a solid blue one in front, lit from above with a rim highlight and a card stripe across
+// it. It is the product's whole material palette (glass + accent) at logo size.
 //
-// The wordmark is set in the Didone. It is the single strongest brand signal in the product, and
-// putting it here means every auth screen inherits it for free.
+// The wordmark is set in Manrope ExtraBold, tight. It is the single strongest brand signal in the
+// product, and putting it here means every auth screen inherits it for free.
+import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/providers/ThemeProvider';
 
 export function BrandMark({ size = 44, showWordmark = true }) {
   const theme = useTheme();
-  const plate = size * 0.76;
+  const plate = size * 0.78;
+  const corner = size * 0.3;
+  const { button } = theme.materials;
 
   return (
     <View style={[styles.row, { gap: theme.spacing.md }]}>
@@ -23,7 +26,7 @@ export function BrandMark({ size = 44, showWordmark = true }) {
             {
               width: plate,
               height: plate,
-              borderRadius: theme.radius.xs,
+              borderRadius: corner,
               borderColor: theme.colors.primaryEdge,
               backgroundColor: theme.materials.brandSubtle,
             },
@@ -33,23 +36,27 @@ export function BrandMark({ size = 44, showWordmark = true }) {
         <View
           style={[
             styles.front,
-            {
-              width: plate,
-              height: plate,
-              borderRadius: theme.radius.xs,
-              backgroundColor: theme.colors.primary,
-            },
+            { width: plate, height: plate, borderRadius: corner },
+            theme.materials.shadow.sm,
           ]}
         >
-          {/* The inscribed rules that make the plate read as a card rather than a swatch. */}
-          <View
-            style={[styles.stripe, { backgroundColor: theme.colors.onPrimary, opacity: 0.9 }]}
+          <LinearGradient
+            colors={button.gradient}
+            start={{ x: 0.5, y: 0 }}
+            end={{ x: 0.5, y: 1 }}
+            style={[StyleSheet.absoluteFill, { borderRadius: corner }]}
           />
+          <View
+            style={[styles.rim, { backgroundColor: button.rim, left: corner * 0.6, right: corner * 0.6 }]}
+          />
+
+          {/* The stripe and chip that make the plate read as a card rather than a swatch. */}
+          <View style={[styles.stripe, { backgroundColor: theme.colors.onPrimary, opacity: 0.95 }]} />
           <View
             style={[
               styles.stripe,
               styles.stripeShort,
-              { backgroundColor: theme.colors.onPrimary, opacity: 0.5 },
+              { backgroundColor: theme.colors.onPrimary, opacity: 0.55 },
             ]}
           />
         </View>
@@ -62,6 +69,7 @@ export function BrandMark({ size = 44, showWordmark = true }) {
             {
               color: theme.colors.text,
               fontFamily: theme.fonts.display.semibold,
+              fontSize: size * 0.46 + 4,
               letterSpacing: theme.typography.tracking.title,
             },
           ]}
@@ -82,19 +90,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    borderWidth: StyleSheet.hairlineWidth,
-    transform: [{ rotate: '-9deg' }],
+    borderWidth: StyleSheet.hairlineWidth * 2,
+    transform: [{ rotate: '-10deg' }],
   },
   front: {
     position: 'absolute',
     bottom: 0,
     right: 0,
-    padding: 6,
+    padding: 7,
     justifyContent: 'flex-end',
-    gap: 3,
+    gap: 4,
+  },
+  rim: {
+    position: 'absolute',
+    top: 0,
+    height: StyleSheet.hairlineWidth * 2,
+    borderRadius: 2,
   },
   stripe: {
-    height: StyleSheet.hairlineWidth * 2,
+    height: 2.5,
+    borderRadius: 2,
     width: '76%',
   },
   stripeShort: {

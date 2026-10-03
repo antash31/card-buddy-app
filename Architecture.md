@@ -82,50 +82,49 @@ non-persisted flow flag allows an explicit skip to advance to the goal during th
 | Session in Zustand, not React Query| Routing needs a synchronous "is this person signed in?"      |
 | Hand-built motion kit over gluestack | Springs, gesture handoff and materials gluestack lacks     |
 
-## Design system — "Statement"
+## Design system — "Lumen"
 
-The governing metaphor is a private bank's printed statement: letterpress on warm stock, hairline
-rules instead of boxes, wide margins, engraved numerals. See `.impeccable.md` at the repo root for
-the full design context and the reasoning behind each choice.
+Soft cards on a lit canvas, one blue accent, and a few panes of liquid glass. The full specification
+(tokens, the glass recipe, every component, contrast figures, rules) is in `DESIGN_SYSTEM.md` next to
+this file; `.impeccable.md` at the repo root records the design intent.
 
-`src/theme/` holds five token layers:
+`src/theme/` holds the token layers:
 
 | File | Contents |
 | ---- | -------- |
-| `fonts.js` | The two families + the `loadAsync` map |
-| `tokens.js` | 4pt spacing, tight radii, the type scale, `metrics` |
-| `colors.js` | Warm paper/ink neutrals + a single pine accent |
-| `materials.js` | Canvas wash, the one blurred chrome surface, card plates |
-| `motion.js` | Spring presets calibrated to Apple's damping/response pairs |
+| `fonts.js` | Manrope (500 / 600 / 700 / 800) + the `loadAsync` map |
+| `tokens.js` | 4pt spacing, generous radii, the type scale, shadows, `metrics` |
+| `colors.js` | Cool canvas + ink neutrals, one blue accent, status colours, illustration accents |
+| `materials.js` | Glass presets, ambient canvas and light pools, card/field/button materials, card-art tones |
+| `motion.js` | Spring presets calibrated to Apple's damping/response pairs, incl. `liquid` |
 
-**Type.** Bodoni Moda (Didone) for titles and figures; Golos Text for everything read at small
-size. Weight is chosen by *family* (`fonts.text.semibold`), never `fontWeight` — static Google
-Font instances are separate files, so `fontWeight` gets you synthetic bolding on Android and
-nothing on iOS. `textStyles` bundles family + size + leading + tracking so they cannot drift apart.
+**Type.** One family. Weight is chosen by *family* (`fonts.text.semibold`), never `fontWeight` —
+static Google Font instances are separate files. `textStyles` bundles family + size + leading +
+tracking so they cannot drift apart.
 
-**Colour.** Two hues: paper/ink at ~70°, pine at 155°. Designed in OKLCH for perceptual
-uniformity, shipped as hex because React Native cannot parse `oklch()`; the source coordinate sits
-in a comment beside every token. The accent appears on roughly one element per screen.
+**Colour.** Semantic tokens only; contrast is computed and tabulated in `DESIGN_SYSTEM.md`. Blue is
+the only colour a control is painted in; illustration accents are decoration only.
 
-**Surfaces.** Flat paper and `Rule` hairlines carry the layout. `Panel` exists for the rare case
-that genuinely needs containing and is never nested. There is exactly one translucent surface in
-the product — the tab bar, which really does float over scrolling content.
+**Surfaces.** `AmbientBackground` paints the canvas; `Surface` is the soft white card; `Glass` is the
+five-layer liquid-glass pane (blur → fill → sheen → edge → shadow) used only for things that float.
+`Surface` provides a `SurfaceContext` so fields recess on cards. Glass degrades to no-blur on Android
+and to opaque under reduce-transparency.
 
 The components built on all this:
 
 | Folder | Contents |
 | ------ | -------- |
 | `components/motion/` | `PressableScale`, `Reveal` |
-| `components/surfaces/` | `PaperBackground`, `Rule`, `Panel` |
-| `components/layout/` | `AppScreen`, `AuthLayout`, `ScreenHeader`, `BootSplash`, `Screen` |
-| `components/navigation/` | `TabBar` |
+| `components/surfaces/` | `AmbientBackground`, `Surface`, `Glass`, `Rule`, `SurfaceContext` |
+| `components/layout/` | `AppScreen`, `AuthLayout`, `ScreenHeader`, `SectionLabel`, `BootSplash`, `Screen` |
+| `components/navigation/` | `TabBar` (floating glass capsule with a spring-driven lens) |
 | `components/forms/` | `TextField`, `PasswordStrength`, `FieldError`, `FormBanner` |
-| `components/actions/` | `PrimaryButton`, `SecondaryButton`, `SocialButton`, `TextLink` |
-| `components/brand/` | `BrandMark`, `CardStack` |
-| `components/icons/` | Inline SVG glyphs on a 1.5-stroke grid (no icon dependency) |
+| `components/actions/` | `PrimaryButton`, `SecondaryButton`, `SocialButton`, `TextLink`, `IconButton`, `Chip` |
+| `components/brand/` | `BrandMark`, `CardArt`, `CardStack`, `cardTone` (pure helpers, unit-tested) |
+| `components/icons/` | Inline SVG glyphs on a 1.8-stroke grid (no icon dependency) |
 
-`ScreenHeader` is the repeated motif — tracked-caps eyebrow, Didone title, closing rule. Because
-the eyebrow does the labelling, screens need no section headings, which is what keeps them quiet.
+`ScreenHeader` is the repeated motif — blue eyebrow, heavy title, optional description, one header
+action. Grouped content is a column of `Surface` cards, labelled by `SectionLabel`.
 
 Motion rules worth preserving: feedback fires on press-*down*, springs (never fixed durations)
 so animations can be interrupted and reversed, critical damping unless the user's gesture

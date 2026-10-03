@@ -1,122 +1,147 @@
-// #genai: The "Statement" palette — raw tones plus the semantic light/dark tokens built from them.
+// #genai: The "Lumen" palette — raw tones plus the semantic light/dark tokens built from them.
 //
 // Components read semantic tokens (`theme.colors.*`) only, never the raw palette, so re-theming
 // stays a single-file change.
 //
-// Two hues carry the whole product:
-//   - Paper / ink, hue ~70°. Warm neutrals, because cold grey reads clinical and this has to read
-//     considered. Every neutral is tinted, so nothing is ever pure black or pure white.
-//   - Pine, hue 155°. The only saturated colour in the system, reserved for the primary action,
-//     selection, and positive value. It works *because* it is rare.
-// Oxide (25°) and ochre (70°) exist purely for destructive and cautionary states.
+// Three ideas carry the whole product:
+//   - A cool, bright canvas (blue-grey, hue ~250°) that glass can sit on. Neutrals are tinted blue,
+//     never pure grey, so every white surface reads as lit rather than flat.
+//   - One confident blue (hue ~262°) for the primary action, selection and links. It is the
+//     brand colour and the only chromatic colour a control is ever painted in.
+//   - A handful of bright "illustration" accents (lime, coral, violet, sun…) that are allowed on
+//     decorative surfaces only — card art, avatars, ambient light — and never on text or controls.
 //
-// Each tone was designed in OKLCH for perceptual uniformity and converted to hex, because React
-// Native's style engine does not parse `oklch()`. The source coordinate is kept beside each value —
-// edit the OKLCH, re-run `node scripts/oklch.mjs`, paste the hex back.
+// Contrast is computed, not eyeballed (WCAG ratios, light mode): `text` 16–18:1, `textMuted` 5.6–6.3:1,
+// `primary` 5.3:1 on white / 4.65:1 on the canvas, `success` 4.9–5.5:1 and `danger` 4.6–5.4:1 on
+// white, the canvas and their tinted fills — so all of them may colour small text. `textFaint` is ~3.2:1: icons,
+// separators, placeholders and large type only, never a fact the user has to read. In dark mode
+// the accent flips to a lighter blue (6.9–7.8:1), which means its label has to flip to near-black
+// (`onPrimary`, 7.3:1) to stay legible.
+//
+// Tones are written as hex because React Native's style engine does not parse `oklch()`.
 
 const palette = {
-  // ── Paper: warm neutrals, light end ────────────────────────────  oklch(L C 75)
-  paper: '#FCF9F5', //        0.984 0.006
-  paperRaised: '#FFFDFC', //  0.996 0.003
-  paperSunken: '#F4F0EB', //  0.956 0.008
-  rule: '#DEDAD5', //         0.890 0.008
-  ruleStrong: '#C2BDB7', //   0.800 0.010
+  // ── Canvas & surfaces, light ───────────────────────────────────
+  canvas: '#EDF1F6',
+  canvasHigh: '#F6F8FC',
+  canvasLow: '#E3E9F1',
+  white: '#FFFFFF',
+  mist: '#F4F6FA', //            sunken tiles, inactive chips
+  hairline: 'rgba(20, 32, 64, 0.08)',
+  hairlineStrong: 'rgba(20, 32, 64, 0.16)',
 
-  // ── Ink: warm neutrals, dark end ───────────────────────────────  oklch(L C ~65)
-  inkFaint: '#8E8881', //     0.630 0.012
-  inkMuted: '#69625B', //     0.500 0.014
-  ink: '#251E18', //          0.240 0.016
-  inkDeep: '#120C07', //      0.160 0.014
+  // ── Ink, light ─────────────────────────────────────────────────
+  ink: '#0F1521',
+  inkMuted: '#566075',
+  inkFaint: '#8791A4',
 
-  // ── Pine: the accent ───────────────────────────────────────────  oklch(L C 155)
-  pine: '#326445', //         0.460 0.075
-  pinePressed: '#245337', //  0.400 0.070
-  pineEdge: '#C2D7C9', //     0.860 0.030
-  pineSubtle: '#E1EFE5', //   0.940 0.020
-  pineLight: '#6BB888', //    0.720 0.105 — legible on a dark ground
-  pineLightPressed: '#569E71', // 0.640 0.100
-  pineEdgeDark: '#243F2E', // 0.340 0.045
-  pineSubtleDark: '#17291D', //   0.260 0.032
+  // ── Blue: the one accent ───────────────────────────────────────
+  blue: '#2863E3',
+  bluePressed: '#1F52C4',
+  blueSubtle: '#E7EFFF',
+  blueEdge: '#C4D6FA',
+  blueBright: '#4C8DFF', //      for gradients and ambient light only
+  blueLight: '#6EA3FF', //       the accent on a dark ground
+  blueLightPressed: '#5890F0',
+  blueSubtleDark: 'rgba(110, 163, 255, 0.16)',
+  blueEdgeDark: 'rgba(110, 163, 255, 0.34)',
 
-  // ── Oxide: destructive ─────────────────────────────────────────  oklch(L C 25)
-  oxide: '#A83634', //        0.500 0.150
-  oxideSubtle: '#FDE7E4', //  0.945 0.025
-  oxideLight: '#DB6C66', //   0.660 0.140
-  oxideSubtleDark: '#3E1E1C', //  0.280 0.050
+  // ── Status ─────────────────────────────────────────────────────
+  green: '#0A7849',
+  greenSubtle: '#E1F5EB',
+  greenLight: '#46D39A',
+  greenSubtleDark: 'rgba(70, 211, 154, 0.14)',
+  amber: '#A25F00',
+  amberSubtle: '#FFF1D6',
+  amberLight: '#F2B24A',
+  amberSubtleDark: 'rgba(242, 178, 74, 0.14)',
+  red: '#C9301F',
+  redSubtle: '#FDEBE8',
+  redLight: '#FF7A6B',
+  redSubtleDark: 'rgba(255, 122, 107, 0.14)',
 
-  // ── Ochre: caution ─────────────────────────────────────────────  oklch(L C ~70)
-  ochre: '#A56C26', //        0.580 0.110
-  ochreSubtle: '#FBECD9', //  0.950 0.030
-  ochreLight: '#D79E59', //   0.740 0.110
-  ochreSubtleDark: '#3A2A16', //  0.300 0.040
+  // ── Canvas & surfaces, dark ────────────────────────────────────
+  canvasDark: '#090C13',
+  canvasDarkHigh: '#0F1420',
+  canvasDarkLow: '#05070C',
+  cardDark: '#151A27',
+  mistDark: '#0F131D',
+  hairlineDark: 'rgba(255, 255, 255, 0.09)',
+  hairlineStrongDark: 'rgba(255, 255, 255, 0.18)',
 
-  // ── Paper: dark end (the same warm hue, inverted) ──────────────  oklch(L C 72)
-  paperDark: '#0E0C09', //    0.155 0.008
-  paperDarkRaised: '#181511', //  0.198 0.009
-  paperDarkSunken: '#080604', //  0.125 0.007
-  ruleDark: '#2C2824', //     0.280 0.010
-  ruleDarkStrong: '#443F39', //   0.370 0.012
-  inkFaintDark: '#6D6862', // 0.520 0.012
-  inkMutedDark: '#979189', // 0.660 0.014
-  inkLight: '#F1EEEA', //     0.950 0.006
+  // ── Ink, dark ──────────────────────────────────────────────────
+  inkLight: '#EEF2FA',
+  inkMutedDark: '#9EA9BE',
+  inkFaintDark: '#6C778C',
+
+  // ── Illustration accents — decorative surfaces only ────────────
+  lime: '#C8F24A',
+  coral: '#FF5A47',
+  violet: '#7B61F2',
+  sky: '#7DB6FF',
+  sun: '#FFD84A',
+  graphite: '#3A3D45',
+  mint: '#3DD6A0',
+  peach: '#FFB38A',
+  rose: '#FF8FB1',
 };
 
 const lightColors = {
-  background: palette.paper,
-  surface: palette.paperRaised,
-  surfaceAlt: palette.paperSunken,
-  border: palette.rule,
-  borderStrong: palette.ruleStrong,
+  background: palette.canvas,
+  surface: palette.white,
+  surfaceAlt: palette.mist,
+  border: palette.hairline,
+  borderStrong: palette.hairlineStrong,
 
   text: palette.ink,
   textMuted: palette.inkMuted,
-  // Non-text and large-text only — 3.34:1. Never body copy.
+  // Non-text and large-text only — ~3.2:1. Never body copy.
   textFaint: palette.inkFaint,
-  textInverted: palette.paper,
+  textInverted: palette.white,
 
-  primary: palette.pine,
-  primaryPressed: palette.pinePressed,
-  primarySubtle: palette.pineSubtle,
-  primaryEdge: palette.pineEdge,
-  onPrimary: palette.paper,
+  primary: palette.blue,
+  primaryPressed: palette.bluePressed,
+  primarySubtle: palette.blueSubtle,
+  primaryEdge: palette.blueEdge,
+  onPrimary: palette.white,
 
-  success: palette.pine,
-  successSubtle: palette.pineSubtle,
-  warning: palette.ochre,
-  warningSubtle: palette.ochreSubtle,
-  danger: palette.oxide,
-  dangerSubtle: palette.oxideSubtle,
+  success: palette.green,
+  successSubtle: palette.greenSubtle,
+  warning: palette.amber,
+  warningSubtle: palette.amberSubtle,
+  danger: palette.red,
+  dangerSubtle: palette.redSubtle,
 
-  overlay: 'rgba(18, 12, 7, 0.42)',
+  overlay: 'rgba(15, 21, 33, 0.40)',
 };
 
 const darkColors = {
-  background: palette.paperDark,
-  surface: palette.paperDarkRaised,
-  surfaceAlt: palette.paperDarkSunken,
-  border: palette.ruleDark,
-  borderStrong: palette.ruleDarkStrong,
+  background: palette.canvasDark,
+  surface: palette.cardDark,
+  surfaceAlt: palette.mistDark,
+  border: palette.hairlineDark,
+  borderStrong: palette.hairlineStrongDark,
 
   text: palette.inkLight,
   textMuted: palette.inkMutedDark,
   textFaint: palette.inkFaintDark,
-  textInverted: palette.paperDark,
+  textInverted: palette.canvasDark,
 
-  primary: palette.pineLight,
-  primaryPressed: palette.pineLightPressed,
-  primarySubtle: palette.pineSubtleDark,
-  primaryEdge: palette.pineEdgeDark,
+  primary: palette.blueLight,
+  primaryPressed: palette.blueLightPressed,
+  primarySubtle: palette.blueSubtleDark,
+  primaryEdge: palette.blueEdgeDark,
   // The accent is light in dark mode, so its label has to flip to the dark ground.
-  onPrimary: palette.paperDark,
+  onPrimary: '#06132E',
 
-  success: palette.pineLight,
-  successSubtle: palette.pineSubtleDark,
-  warning: palette.ochreLight,
-  warningSubtle: palette.ochreSubtleDark,
-  danger: palette.oxideLight,
-  dangerSubtle: palette.oxideSubtleDark,
+  success: palette.greenLight,
+  successSubtle: palette.greenSubtleDark,
+  warning: palette.amberLight,
+  warningSubtle: palette.amberSubtleDark,
+  danger: palette.redLight,
+  dangerSubtle: palette.redSubtleDark,
 
-  overlay: 'rgba(8, 6, 4, 0.66)',
+  overlay: 'rgba(3, 5, 10, 0.66)',
 };
 
 export { palette, lightColors, darkColors };

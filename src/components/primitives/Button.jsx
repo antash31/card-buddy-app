@@ -27,9 +27,9 @@ function getVariantStyle(theme, variant, pressed) {
 }
 
 const SIZES = {
-  sm: { paddingVertical: 8, paddingHorizontal: 14 },
-  md: { paddingVertical: 12, paddingHorizontal: 18 },
-  lg: { paddingVertical: 16, paddingHorizontal: 22 },
+  sm: { paddingVertical: 8, paddingHorizontal: 16 },
+  md: { paddingVertical: 13, paddingHorizontal: 22 },
+  lg: { paddingVertical: 17, paddingHorizontal: 26 },
 };
 
 export function Button({
@@ -58,7 +58,7 @@ export function Button({
         {
           backgroundColor: getVariantStyle(theme, variant, pressed).backgroundColor,
           borderColor: getVariantStyle(theme, variant, pressed).borderColor,
-          borderRadius: theme.radius.md,
+          borderRadius: theme.radius.full,
           opacity: isInteractive ? 1 : 0.5,
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
         },

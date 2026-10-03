@@ -1,53 +1,45 @@
-// #genai: The two typefaces and the map used to load them.
+// #genai: The one typeface and the map used to load it.
 //
-// Bodoni Moda is a Didone: extreme stroke contrast, flat unbracketed serifs. It reads as
-// *engraving* — banknotes, share certificates — which is the whole premium signal. Its hairlines
-// are fragile below ~20px, so it is only ever used at title size and above.
-//
-// Golos Text is a quiet Paratype grotesque with a generous x-height and even, steady numerals. Its
-// job is to disappear: everything a user reads at a payment counter is set in it.
+// Manrope is a semi-geometric grotesque with open apertures, a single-storey "g" and very even
+// tabular numerals. Set heavy and tracked in, it gives the confident, rounded-but-precise headline
+// voice of the reference design; set medium it stays calm in dense financial rows. One family keeps
+// the payload small and means display and UI text can never drift apart in metrics.
 //
 // Weight is selected by FAMILY, never by `fontWeight`. Static Google Font instances are separate
-// files, so asking for `fontWeight: '600'` on the 400 file gets you synthetic bolding on Android
+// files, so asking for `fontWeight: '700'` on the 500 file gets you synthetic bolding on Android
 // and nothing at all on iOS.
+//
+// The role names (`regular` / `medium` / `semibold` / `bold`) are kept stable so components never
+// name a file directly. They sit one notch heavier than the usual mapping on purpose: at phone
+// sizes on a pale glass ground, Manrope 400 looks anaemic, and 500 is the real "regular" here.
 import {
-  BodoniModa_400Regular,
-  BodoniModa_500Medium,
-  BodoniModa_600SemiBold,
-  BodoniModa_700Bold,
-} from '@expo-google-fonts/bodoni-moda';
-import {
-  GolosText_400Regular,
-  GolosText_500Medium,
-  GolosText_600SemiBold,
-  GolosText_700Bold,
-} from '@expo-google-fonts/golos-text';
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
+} from '@expo-google-fonts/manrope';
 
 /** Passed straight to `Font.loadAsync`. */
 export const fontAssets = {
-  BodoniModa_400Regular,
-  BodoniModa_500Medium,
-  BodoniModa_600SemiBold,
-  BodoniModa_700Bold,
-  GolosText_400Regular,
-  GolosText_500Medium,
-  GolosText_600SemiBold,
-  GolosText_700Bold,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
 };
 
 export const fonts = {
-  /** Display serif — titles, figures, the brand mark. Large sizes only. */
+  /** Headlines, figures, the wordmark. Same family as `text`, heavier cuts. */
   display: {
-    regular: 'BodoniModa_400Regular',
-    medium: 'BodoniModa_500Medium',
-    semibold: 'BodoniModa_600SemiBold',
-    bold: 'BodoniModa_700Bold',
+    regular: 'Manrope_600SemiBold',
+    medium: 'Manrope_700Bold',
+    semibold: 'Manrope_800ExtraBold',
+    bold: 'Manrope_800ExtraBold',
   },
   /** Everything else. */
   text: {
-    regular: 'GolosText_400Regular',
-    medium: 'GolosText_500Medium',
-    semibold: 'GolosText_600SemiBold',
-    bold: 'GolosText_700Bold',
+    regular: 'Manrope_500Medium',
+    medium: 'Manrope_600SemiBold',
+    semibold: 'Manrope_700Bold',
+    bold: 'Manrope_800ExtraBold',
   },
 };

@@ -123,7 +123,7 @@ export function SignInScreen() {
       <Reveal delay={stagger(5)} style={{ gap: theme.spacing.lg }}>
         <View style={[styles.divider, { gap: theme.spacing.md }]}>
           <View style={[styles.rule, { backgroundColor: theme.colors.border }]} />
-          <Text style={[theme.textStyles.micro, { color: theme.colors.textFaint }]}>or</Text>
+          <Text style={[theme.textStyles.micro, { color: theme.colors.textMuted }]}>or</Text>
           <View style={[styles.rule, { backgroundColor: theme.colors.border }]} />
         </View>
 

@@ -1,4 +1,4 @@
-// #genai: Authenticated area — three tabs across the bottom.
+// #genai: Authenticated area — four tabs in a floating glass capsule.
 import { Tabs } from 'expo-router';
 
 import { TabBar } from '@/components/navigation/TabBar';
@@ -9,7 +9,7 @@ export default function AppLayout() {
 
   return (
     <Tabs
-      // The bar is absolutely positioned and translucent, so screens reserve their own bottom
+      // The capsule floats over the content and is translucent, so screens reserve their own bottom
       // padding (see `AppScreen`) instead of the navigator insetting them.
       tabBar={(props) => <TabBar {...props} />}
       screenOptions={{
@@ -17,6 +17,12 @@ export default function AppLayout() {
         sceneStyle: { backgroundColor: theme.colors.background },
       }}
     >
+      <Tabs.Screen name="tracking" options={{ href: null }} />
+      <Tabs.Screen name="transaction-review" options={{ href: null }} />
+      <Tabs.Screen name="card-details" options={{ href: null }} />
+      <Tabs.Screen name="wallet-audit" options={{ href: null }} />
+      <Tabs.Screen name="wallet-categories" options={{ href: null }} />
+      <Tabs.Screen name="credit-health" options={{ href: null }} />
       <Tabs.Screen name="index" options={{ title: 'Nest' }} />
       <Tabs.Screen name="swipemax" options={{ title: 'SwipeMax' }} />
       <Tabs.Screen name="add-card" options={{ title: 'Add' }} />

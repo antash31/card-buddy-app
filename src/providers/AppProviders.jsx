@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaListener, SafeAreaProvider } from 'react-native-safe-area-context';
 import { Uniwind } from 'uniwind';
 
+import { TrackingLifecycle } from '@/features/tracking/lifecycle';
 import { queryClient } from '@/api/queryClient';
 import { GluestackUIProvider } from '@/components/ui/gluestack-ui-provider';
 
@@ -27,7 +28,7 @@ export function AppProviders({ children }) {
         >
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-              <GluestackThemeBridge>{children}</GluestackThemeBridge>
+              <GluestackThemeBridge><TrackingLifecycle />{children}</GluestackThemeBridge>
             </ThemeProvider>
           </QueryClientProvider>
         </SafeAreaListener>

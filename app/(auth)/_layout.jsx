@@ -6,7 +6,7 @@ export default function AuthLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        // Transparent so the aurora backdrop owns the background during transitions.
+        // Transparent: every auth screen paints its own ambient canvas, so the stack adds no fill.
         contentStyle: { backgroundColor: 'transparent' },
         animation: 'slide_from_right',
       }}

@@ -3,17 +3,32 @@
 // Sign-out used to sit at the bottom of the Card Nest, below the card list, where it was both easy
 // to hit by accident and impossible to find on purpose. It belongs here.
 //
-// The detail rows are label-left / value-right with a rule between them — the layout a printed
-// statement uses for account particulars, and the reason this screen needs no panels at all.
+// The identity block is a pane of glass (this screen's header sits over the canvas's brightest
+// light pool, so it is where the blur reads best). Everything below it is grouped rows on soft
+// cards: an icon tile, a label, and either a value or a chevron — the same shape every time, so the
+// screen scans like a settings list rather than a form.
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import { Image, StyleSheet, Text, View } from 'react-native';
 
+import { Chip } from '@/components/actions/Chip';
 import { SecondaryButton } from '@/components/actions/SecondaryButton';
-import { DeviceIcon, LogOutIcon, MoonIcon, SunIcon } from '@/components/icons';
+import {
+  ActivityIcon,
+  ChevronRightIcon,
+  DeviceIcon,
+  LogOutIcon,
+  MoonIcon,
+  NestIcon,
+  SunIcon,
+} from '@/components/icons';
 import { AppScreen } from '@/components/layout/AppScreen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { SectionLabel } from '@/components/layout/SectionLabel';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { Reveal } from '@/components/motion/Reveal';
 import { Rule } from '@/components/surfaces/Rule';
+import { Surface } from '@/components/surfaces/Surface';
 import { useSignOut } from '@/features/auth/hooks/useAuthActions';
 import { useMyCards } from '@/features/card-nest/hooks/useNest';
 import { useTheme } from '@/providers/ThemeProvider';
@@ -27,8 +42,11 @@ const THEME_OPTIONS = [
   { value: 'dark', label: 'Dark', Icon: MoonIcon },
 ];
 
+const TILE = 38;
+
 export function ProfileScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const user = useAuthStore((state) => state.user);
   const profile = useAuthStore((state) => state.profile);
   const signOut = useSignOut();
@@ -44,10 +62,10 @@ export function ProfileScreen() {
       <ScreenHeader eyebrow="Account" title={profile?.fullName ?? 'Your account'} titleLines={2} />
 
       <Reveal delay={stagger(4)}>
-        <View style={[styles.identity, { gap: theme.spacing.lg }]}>
+        <Surface tone="glass" shadow="md" contentStyle={[styles.identity, { gap: theme.spacing.lg }]}>
           <Avatar name={profile?.fullName} url={profile?.avatarUrl} />
-          <View style={{ gap: theme.spacing.hair, flex: 1 }}>
-            <Text style={[theme.textStyles.micro, { color: theme.colors.textFaint }]}>
+          <View style={{ gap: theme.spacing.xs, flex: 1 }}>
+            <Text style={[theme.textStyles.micro, { color: theme.colors.textMuted }]}>
               Signed in as
             </Text>
             <Text
@@ -57,64 +75,42 @@ export function ProfileScreen() {
               {user?.email ?? '—'}
             </Text>
           </View>
-        </View>
+        </Surface>
       </Reveal>
 
-      {/* One bare ruled row, with no section heading above it. The name is already the page title,
-          so listing it again as a "particular" would just be the screen repeating itself. */}
       <Reveal delay={stagger(5)}>
-        <View>
-          <Rule />
-          <DetailRow label="Cards held" value={cardCount === undefined ? '—' : String(cardCount)} />
-          <Rule />
-        </View>
+        <Surface padded={false}>
+          <ListRow
+            icon={NestIcon}
+            label="Cards held"
+            value={cardCount === undefined ? '—' : String(cardCount)}
+          />
+          <Rule inset={theme.spacing.lg + TILE + theme.spacing.md} />
+          <ListRow
+            icon={ActivityIcon}
+            label="Transaction tracking"
+            onPress={() => router.push('/tracking')}
+          />
+        </Surface>
       </Reveal>
 
-      <Reveal delay={stagger(6)}>
-        <Section
-          label="Appearance"
-          hint="System follows your device. Pin it if you read the app in one lighting all day."
-        >
-          <View style={[styles.options, { gap: theme.spacing.sm }]}>
-            {THEME_OPTIONS.map(({ value, label, Icon }) => {
-              const selected = preference === value;
-
-              return (
-                <PressableScale
-                  key={value}
-                  accessibilityLabel={`${label} appearance`}
-                  accessibilityState={{ selected }}
-                  haptic="selection"
-                  onPress={() => setPreference(value)}
-                  scaleTo={0.97}
-                  style={[
-                    styles.option,
-                    {
-                      borderRadius: theme.radius.sm,
-                      paddingVertical: theme.spacing.md,
-                      gap: theme.spacing.sm,
-                      borderColor: selected ? theme.colors.primary : theme.colors.border,
-                      backgroundColor: selected ? theme.colors.primarySubtle : 'transparent',
-                    },
-                  ]}
-                >
-                  <Icon
-                    size={19}
-                    color={selected ? theme.colors.primary : theme.colors.textMuted}
-                  />
-                  <Text
-                    style={[
-                      theme.textStyles.micro,
-                      { color: selected ? theme.colors.primary : theme.colors.textMuted },
-                    ]}
-                  >
-                    {label}
-                  </Text>
-                </PressableScale>
-              );
-            })}
-          </View>
-        </Section>
+      <Reveal delay={stagger(6)} style={{ gap: theme.spacing.md }}>
+        <SectionLabel label="Appearance" />
+        <View style={[styles.options, { gap: theme.spacing.sm }]}>
+          {THEME_OPTIONS.map(({ value, label, Icon }) => (
+            <Chip
+              key={value}
+              label={label}
+              icon={Icon}
+              selected={preference === value}
+              onPress={() => setPreference(value)}
+              style={styles.option}
+            />
+          ))}
+        </View>
+        <Text style={[theme.textStyles.caption, styles.prose, { color: theme.colors.textMuted }]}>
+          System follows your device. Pin it if you read the app in one lighting all day.
+        </Text>
       </Reveal>
 
       <Reveal delay={stagger(7)}>
@@ -131,39 +127,48 @@ export function ProfileScreen() {
   );
 }
 
-function Section({ label, hint, children }) {
+function ListRow({ icon: Icon, label, value, onPress }) {
   const theme = useTheme();
 
-  return (
-    <View style={{ gap: theme.spacing.md }}>
-      <Text style={[theme.textStyles.micro, { color: theme.colors.textFaint }]}>{label}</Text>
-      {hint ? (
-        <Text style={[theme.textStyles.caption, styles.prose, { color: theme.colors.textMuted }]}>
-          {hint}
-        </Text>
-      ) : null}
-      <View>{children}</View>
-    </View>
-  );
-}
-
-function DetailRow({ label, value }) {
-  const theme = useTheme();
-
-  return (
-    <View style={[styles.detailRow, { paddingVertical: theme.spacing.md, gap: theme.spacing.lg }]}>
-      <Text style={[theme.textStyles.body, { color: theme.colors.textMuted }]}>{label}</Text>
-      <Text
-        numberOfLines={1}
-        style={[theme.textStyles.bodyStrong, styles.detailValue, { color: theme.colors.text }]}
+  const content = (
+    <View style={[styles.row, { padding: theme.spacing.lg, gap: theme.spacing.md }]}>
+      <View
+        style={[
+          styles.tile,
+          { backgroundColor: theme.colors.primarySubtle, borderRadius: theme.radius.sm },
+        ]}
       >
-        {value}
+        <Icon size={19} color={theme.colors.primary} />
+      </View>
+
+      <Text style={[theme.textStyles.bodyStrong, styles.rowLabel, { color: theme.colors.text }]}>
+        {label}
       </Text>
+
+      {value !== undefined ? (
+        <Text style={[theme.textStyles.numeric, { color: theme.colors.textMuted }]}>{value}</Text>
+      ) : null}
+      {onPress ? <ChevronRightIcon size={18} color={theme.colors.textFaint} /> : null}
     </View>
+  );
+
+  if (!onPress) return content;
+
+  return (
+    <PressableScale
+      accessibilityLabel={label}
+      haptic="selection"
+      onPress={onPress}
+      scaleTo={0.99}
+      dimTo={0.96}
+      hitSlop={0}
+    >
+      {content}
+    </PressableScale>
   );
 }
 
-function Avatar({ name, url, size = 60 }) {
+function Avatar({ name, url, size = 64 }) {
   const theme = useTheme();
 
   // Two initials at most: three or more turns the mark into a word and stops reading as a monogram.
@@ -183,8 +188,8 @@ function Avatar({ name, url, size = 60 }) {
           width: size,
           height: size,
           borderRadius: theme.radius.full,
-          borderWidth: StyleSheet.hairlineWidth,
-          borderColor: theme.colors.border,
+          borderWidth: 2,
+          borderColor: theme.materials.glass.thick.edge,
         }}
       />
     );
@@ -194,22 +199,17 @@ function Avatar({ name, url, size = 60 }) {
     <View
       style={[
         styles.avatar,
-        {
-          width: size,
-          height: size,
-          borderRadius: theme.radius.full,
-          backgroundColor: theme.colors.primarySubtle,
-          borderColor: theme.colors.primaryEdge,
-        },
+        theme.materials.shadow.sm,
+        { width: size, height: size, borderRadius: theme.radius.full },
       ]}
     >
-      {/* The monogram is the one place the Didone shows up outside a screen title. */}
-      <Text
-        style={[
-          theme.textStyles.heading,
-          { color: theme.colors.primary, fontFamily: theme.fonts.display.medium },
-        ]}
-      >
+      <LinearGradient
+        colors={theme.materials.button.gradient}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+      <Text style={[theme.textStyles.title, { color: theme.colors.onPrimary }]}>
         {initials || '—'}
       </Text>
     </View>
@@ -222,26 +222,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
+    overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
   },
-  detailRow: {
+  row: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  detailValue: {
-    flexShrink: 1,
-    textAlign: 'right',
+  tile: {
+    width: TILE,
+    height: TILE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowLabel: {
+    flex: 1,
   },
   options: {
     flexDirection: 'row',
   },
   option: {
     flex: 1,
-    alignItems: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
   },
   prose: {
     maxWidth: 460,

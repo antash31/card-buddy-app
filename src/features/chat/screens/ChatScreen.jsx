@@ -1,13 +1,15 @@
 // #genai: Streaming-aware SwipeMax chat — the ranking paints before the sentence arrives.
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { IconButton } from '@/components/actions/IconButton';
 import { TextLink } from '@/components/actions/TextLink';
 import { FormBanner } from '@/components/forms/FormBanner';
+import { ArrowLeftIcon } from '@/components/icons';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
-import { PaperBackground } from '@/components/surfaces/PaperBackground';
+import { AmbientBackground } from '@/components/surfaces/AmbientBackground';
 import { useTheme } from '@/providers/ThemeProvider';
 
 import { ChatTurn } from '../components/ChatTurn';
@@ -16,10 +18,35 @@ import { PromptStarters } from '../components/PromptStarters';
 import { useChatSession, useCreateChatSession, useSendChatMessage } from '../hooks/useChat';
 import { llmAnswerFromLiveText, llmAnswerOf } from '../lib/transcript';
 
+// The floating tab capsule is hidden by the keyboard, so the composer only has to clear it while the
+// keyboard is down. Leaving that gap in place while typing strands the field far above the keys.
+function useKeyboardOpen() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const show = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setOpen(true),
+    );
+    const hide = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setOpen(false),
+    );
+
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
+
+  return open;
+}
+
 export function ChatScreen() {
   const theme = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const keyboardOpen = useKeyboardOpen();
 
   const createSession = useCreateChatSession();
   const [sessionId, setSessionId] = useState(null);
@@ -84,10 +111,12 @@ export function ChatScreen() {
 
   const nestIsEmpty = send.error?.code === 'NEST_EMPTY';
   const showStarters = turns.length === 0 && !pendingAsk && !history.isPending;
-  const bottomInset = insets.bottom + theme.metrics.tabBarHeight;
+  const bottomInset = keyboardOpen
+    ? 0
+    : Math.max(insets.bottom - 6, theme.metrics.tabBarGap) + theme.metrics.tabBarHeight;
 
   return (
-    <PaperBackground>
+    <AmbientBackground>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -96,14 +125,21 @@ export function ChatScreen() {
           ref={scrollRef}
           onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
           contentContainerStyle={{
-            paddingTop: insets.top + theme.spacing.xl,
+            paddingTop: insets.top + theme.spacing.md,
             paddingHorizontal: theme.metrics.gutter,
-            paddingBottom: theme.spacing.xxl,
-            gap: theme.spacing.xxl,
+            paddingBottom: theme.spacing.xl,
+            gap: theme.spacing.xl,
           }}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
         >
+          <IconButton
+            accessibilityLabel="Back to SwipeMax"
+            icon={ArrowLeftIcon}
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/swipemax'))}
+            style={styles.back}
+          />
+
           <ScreenHeader
             eyebrow="At the counter"
             title="Ask"
@@ -163,10 +199,11 @@ export function ChatScreen() {
           paddingBottom={bottomInset + theme.spacing.sm}
         />
       </KeyboardAvoidingView>
-    </PaperBackground>
+    </AmbientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
+  back: { alignSelf: 'flex-start' },
 });

@@ -1,18 +1,26 @@
 // #genai: One catalog hit in the Add-a-Card typeahead.
 //
-// The whole row is the target, so the "Add" affordance is a label rather than a button — a button
-// inside a pressable row gives the user two overlapping targets and no idea which one they hit.
-// Cards already held stay visible and stay legible: hiding them would leave the user wondering
-// whether the search was broken, and dimming them to grey on paper reads as a rendering fault.
+// Rows live together inside one soft card, separated by an inset rule, rather than each being its own
+// tile — a search result list is one object. Each row leads with the generated card art so the
+// issuer's colour is recognisable before the name is read.
+//
+// The whole row is the target, so the "Add" affordance is a pill *label* rather than a nested button
+// — a button inside a pressable row gives the user two overlapping targets and no idea which one
+// they hit. Cards already held stay visible and legible: hiding them would leave the user wondering
+// whether the search was broken.
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
+import { CardArt } from '@/components/brand/CardArt';
 import { CheckIcon, PlusIcon } from '@/components/icons';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { Rule } from '@/components/surfaces/Rule';
 import { useTheme } from '@/providers/ThemeProvider';
 
+const THUMB = 60;
+
 export function CatalogResult({ card, alreadyInNest, adding, isLast, onAdd }) {
   const theme = useTheme();
+  const pad = theme.spacing.md;
 
   return (
     <View>
@@ -26,46 +34,52 @@ export function CatalogResult({ card, alreadyInNest, adding, isLast, onAdd }) {
         onPress={onAdd}
         scaleTo={0.99}
         dimTo={0.96}
-        style={[styles.row, { paddingVertical: theme.spacing.lg, gap: theme.spacing.lg }]}
+        hitSlop={0}
+        style={[styles.row, { padding: pad, gap: theme.spacing.md }]}
       >
-        <CardIdentityColumn card={card} />
+        <CardArt width={THUMB} bank={card.bank} />
+
+        <View style={[styles.identity, { gap: theme.spacing.xs }]}>
+          <Text
+            numberOfLines={1}
+            style={[theme.textStyles.micro, { color: theme.colors.primary }]}
+          >
+            {card.bank}
+            {card.network ? `  ·  ${card.network}` : ''}
+          </Text>
+          <Text style={[theme.textStyles.bodyStrong, { color: theme.colors.text }]}>
+            {card.cardName}
+          </Text>
+        </View>
 
         <View style={styles.action}>
           {adding ? (
             <ActivityIndicator color={theme.colors.primary} size="small" />
           ) : alreadyInNest ? (
-            <View style={[styles.inline, { gap: theme.spacing.xs }]}>
-              <CheckIcon size={14} color={theme.colors.success} />
+            <View
+              style={[
+                styles.pill,
+                { backgroundColor: theme.colors.successSubtle, gap: theme.spacing.xs },
+              ]}
+            >
+              <CheckIcon size={13} color={theme.colors.success} strokeWidth={2.4} />
               <Text style={[theme.textStyles.micro, { color: theme.colors.success }]}>Held</Text>
             </View>
           ) : (
-            <View style={[styles.inline, { gap: theme.spacing.xs }]}>
-              <PlusIcon size={14} color={theme.colors.primary} />
+            <View
+              style={[
+                styles.pill,
+                { backgroundColor: theme.colors.primarySubtle, gap: theme.spacing.xs },
+              ]}
+            >
+              <PlusIcon size={13} color={theme.colors.primary} strokeWidth={2.4} />
               <Text style={[theme.textStyles.micro, { color: theme.colors.primary }]}>Add</Text>
             </View>
           )}
         </View>
       </PressableScale>
 
-      {!isLast ? <Rule /> : null}
-    </View>
-  );
-}
-
-// Kept local rather than reusing `CardIdentity` verbatim so the search list can lead with the
-// issuer — when you are hunting for a card you half-remember, the bank is the thing you are sure of.
-function CardIdentityColumn({ card }) {
-  const theme = useTheme();
-
-  return (
-    <View style={[styles.identity, { gap: theme.spacing.xs }]}>
-      <Text numberOfLines={1} style={[theme.textStyles.micro, { color: theme.colors.textMuted }]}>
-        {card.bank}
-        {card.network ? `  ·  ${card.network}` : ''}
-      </Text>
-      <Text style={[theme.textStyles.bodyStrong, { color: theme.colors.text }]}>
-        {card.cardName}
-      </Text>
+      {!isLast ? <Rule inset={pad + THUMB + theme.spacing.md} /> : null}
     </View>
   );
 }
@@ -79,10 +93,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   action: {
-    minWidth: 52,
+    minWidth: 60,
     alignItems: 'flex-end',
   },
-  inline: {
+  pill: {
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 15,
     flexDirection: 'row',
     alignItems: 'center',
   },
