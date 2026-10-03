@@ -3,6 +3,8 @@
 // This is deliberately Zustand rather than React Query: navigation gating reads it on every
 // render, and it must have a synchronous answer to "is this person signed in?". React Query still
 // owns everything fetched *because* of a session.
+import { clearSmsOnLogout, nativeSession } from '@/features/tracking/native';
+import { queryClient } from '@/api/queryClient';
 import { create } from 'zustand';
 
 import { configureSessionBridge } from '@/api/sessionBridge';
@@ -18,6 +20,8 @@ async function persistTokens(session) {
 }
 
 async function clearTokens() {
+  await clearSmsOnLogout();
+  queryClient.clear();
   await Promise.all([
     secureStorage.remove(StorageKeys.accessToken),
     secureStorage.remove(StorageKeys.refreshToken),
@@ -33,6 +37,7 @@ export const useAuthStore = create((set) => ({
 
   /** Stores a freshly issued session and marks the user signed in. */
   signedIn: async ({ session, user, profile }) => {
+    await clearSmsOnLogout();
     await persistTokens(session);
     set({ status: 'authenticated', user, profile: profile ?? null });
   },
@@ -46,6 +51,7 @@ export const useAuthStore = create((set) => ({
 
   /** Restores a session at launch by validating the stored token against the API. */
   hydrate: async () => {
+    await nativeSession();
     const token = await secureStorage.get(StorageKeys.accessToken);
 
     if (!token) {

@@ -2,6 +2,7 @@
 // The backend answers with `{ success: true, data }` or `{ success: false, error }`,
 // so the response interceptor unwraps `data` and converts failures into `ApiError`.
 import axios from 'axios';
+import { nativeSession, refreshNativeSession } from '@/features/tracking/native';
 
 import { env } from '@/config/env';
 import { StorageKeys } from '@/constants/storageKeys';
@@ -22,6 +23,7 @@ export const apiClient = axios.create({
 apiClient.interceptors.request.use(async (config) => {
   if (config.skipAuth) return config;
 
+  await nativeSession();
   const token = await secureStorage.get(StorageKeys.accessToken);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -99,6 +101,9 @@ async function refreshAccessToken() {
 
 async function performRefresh() {
   try {
+    const failedToken = await secureStorage.get(StorageKeys.accessToken);
+    const native = await refreshNativeSession(failedToken);
+    if (native?.accessToken) return native.accessToken;
     const refreshToken = await secureStorage.get(StorageKeys.refreshToken);
     if (!refreshToken) {
       notifySessionExpired();
