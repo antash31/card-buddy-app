@@ -3,6 +3,7 @@
 // This is deliberately Zustand rather than React Query: navigation gating reads it on every
 // render, and it must have a synchronous answer to "is this person signed in?". React Query still
 // owns everything fetched *because* of a session.
+import { clearReminders } from '@/features/credit-health/lib/reminderSync';
 import { clearSmsOnLogout, nativeSession } from '@/features/tracking/native';
 import { queryClient } from '@/api/queryClient';
 import { create } from 'zustand';
@@ -21,6 +22,8 @@ async function persistTokens(session) {
 
 async function clearTokens() {
   await clearSmsOnLogout();
+  // Another account's cards must not keep reminding this phone.
+  await clearReminders();
   queryClient.clear();
   await Promise.all([
     secureStorage.remove(StorageKeys.accessToken),

@@ -4,6 +4,7 @@
 // the tokens and offer a retry, because that is what used to sign people out.
 import { ApiError } from '@/api/ApiError';
 import { StorageKeys } from '@/constants/storageKeys';
+import { cancelByPrefix } from '@/lib/notifications';
 
 import { useAuthStore } from './authStore';
 
@@ -18,6 +19,7 @@ jest.mock('expo-secure-store', () => ({
   setItemAsync: jest.fn(async (key, value) => void mockStorage.set(key, value)),
   deleteItemAsync: jest.fn(async (key) => void mockStorage.delete(key)),
 }));
+jest.mock('@/lib/notifications', () => ({ cancelByPrefix: jest.fn(async () => 0) }));
 jest.mock('@/lib/logger', () => ({ logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } }));
 jest.mock('@/features/tracking/native', () => ({
   nativeSession: jest.fn(async () => null),
@@ -107,6 +109,13 @@ describe('launching when the server cannot be reached', () => {
 
     expect(state().status).toBe('unauthenticated');
     expect(mockStorage.has(StorageKeys.accessToken)).toBe(false);
+  });
+
+  test('signing out also cancels the phone’s scheduled credit reminders', async () => {
+    cancelByPrefix.mockClear();
+    await state().signedOut();
+
+    expect(cancelByPrefix).toHaveBeenCalledWith('cb-credit:');
   });
 });
 

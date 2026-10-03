@@ -10,15 +10,25 @@ export const creditKeys = {
   overview: ['credit-health'],
 };
 
+const overviewQuery = {
+  queryKey: creditKeys.overview,
+  queryFn: creditHealthApi.fetchCreditHealth,
+  staleTime: 0,
+  refetchOnMount: 'always',
+};
+
+/**
+ * The overview without any navigation coupling, so it can be read from the app shell. `enabled: false`
+ * keeps it from asking the server while nobody is signed in.
+ */
+export function useCreditOverview({ enabled = true } = {}) {
+  return useQuery({ ...overviewQuery, enabled });
+}
+
 // Utilisation is derived from tracked spend, which moves whenever an alert is synced, so it is
 // recomputed on every visit rather than trusted from a cache.
 export function useCreditHealth() {
-  const query = useQuery({
-    queryKey: creditKeys.overview,
-    queryFn: creditHealthApi.fetchCreditHealth,
-    staleTime: 0,
-    refetchOnMount: 'always',
-  });
+  const query = useCreditOverview();
   useRefetchOnFocus(query);
   return query;
 }

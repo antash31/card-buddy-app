@@ -21,6 +21,7 @@ jest.mock('@expo-google-fonts/manrope', () => ({
   Manrope_700Bold: 'Manrope_700Bold',
   Manrope_800ExtraBold: 'Manrope_800ExtraBold',
 }));
+jest.mock('@/lib/notifications', () => ({ notificationsSupported: true, requestPermission: jest.fn() }));
 jest.mock('expo-secure-store', () => ({
   getItemAsync: jest.fn(async () => null),
   setItemAsync: jest.fn(async () => undefined),

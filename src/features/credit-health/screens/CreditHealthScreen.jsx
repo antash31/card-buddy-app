@@ -26,6 +26,7 @@ import { useTheme } from '@/providers/ThemeProvider';
 
 import { CreditCardRow } from '../components/CreditCardRow';
 import { OverallCard } from '../components/OverallCard';
+import { ReminderToggle } from '../components/ReminderToggle';
 import { useCreditHealth, useSaveCreditProfile } from '../hooks/useCreditHealth';
 
 function BackButton() {
@@ -122,6 +123,8 @@ export function CreditHealthScreen() {
       {health.error ? <FormBanner message={health.error.message} /> : null}
 
       <OverallCard overall={health.data.overall} cardsTotal={cards.length} thresholdPct={thresholdPct} />
+
+      <ReminderToggle hasDates={cards.some((card) => card.upcoming)} />
 
       <View style={{ gap: theme.spacing.md }}>
         <SectionLabel label="Your cards" count={cards.length} />
