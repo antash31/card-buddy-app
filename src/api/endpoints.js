@@ -45,6 +45,11 @@ export const endpoints = {
     card: (userCardId) => `/credit-health/cards/${userCardId}`,
   },
 
+  pointsBank: {
+    overview: '/points-bank',
+    balance: (userCardId) => `/points-bank/cards/${userCardId}/balance`,
+  },
+
   swipemax: {
     compare: '/swipemax/compare',
     capConsumption: (capId) => `/swipemax/caps/${capId}/consumption`,

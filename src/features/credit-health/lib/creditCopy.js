@@ -3,19 +3,13 @@
 // The API returns figures and dates, never prose; the wording lives here. Every rupee amount in a
 // sentence came from the API. The one thing computed on this side is the *form*: parsing what a
 // person typed into whole rupees and a day of the month, and saying what is wrong with it.
+import { formatShortDate } from '@/lib/dates';
 import { formatRupeesWhole } from '@/lib/money';
-
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export const LIMIT_MIN = 1_000;
 export const LIMIT_MAX = 100_000_000;
 
-/** `2026-10-12` → "12 Oct". Parsed by hand: `new Date('2026-10-12')` is UTC and can land a day early. */
-export function formatShortDate(isoDate) {
-  const [, month, day] = String(isoDate ?? '').split('-').map(Number);
-  if (!month || !day || month < 1 || month > 12) return '—';
-  return `${day} ${MONTHS[month - 1]}`;
-}
+export { formatShortDate };
 
 export function daysPhrase(days) {
   if (days === 0) return 'today';

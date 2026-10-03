@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import { TOOL_ROW_TILE } from '@/components/actions/ToolRow';
 import { IconButton } from '@/components/actions/IconButton';
 import { PrimaryButton } from '@/components/actions/PrimaryButton';
 import { CardArt } from '@/components/brand/CardArt';
@@ -17,8 +18,10 @@ import { AppScreen } from '@/components/layout/AppScreen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { SectionLabel } from '@/components/layout/SectionLabel';
 import { Reveal } from '@/components/motion/Reveal';
+import { Rule } from '@/components/surfaces/Rule';
 import { Surface } from '@/components/surfaces/Surface';
-import { CreditHealthEntry } from '@/features/credit-health/components/CreditHealthEntry';
+import { CreditHealthRow } from '@/features/credit-health/components/CreditHealthRow';
+import { PointsBankRow } from '@/features/points-bank/components/PointsBankRow';
 import { WalletToolsCard } from '@/features/wallet/components/WalletToolsCard';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useAuthStore } from '@/store/authStore';
@@ -150,8 +153,12 @@ export function CardNestScreen() {
           </Reveal>
 
           <Reveal delay={stagger(4)} style={{ gap: theme.spacing.md }}>
-            <SectionLabel label="Credit health" />
-            <CreditHealthEntry />
+            <SectionLabel label="Credit & rewards" />
+            <Surface padded={false}>
+              <CreditHealthRow />
+              <Rule inset={theme.spacing.lg + TOOL_ROW_TILE + theme.spacing.md} />
+              <PointsBankRow />
+            </Surface>
           </Reveal>
 
           <View style={{ gap: theme.spacing.md }}>

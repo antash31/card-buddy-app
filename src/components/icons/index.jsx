@@ -1,6 +1,6 @@
 // #genai: Hand-rolled SVG icons — a handful of 24px glyphs, drawn on a shared grid so stroke
 // weight and optical size stay consistent without pulling in an icon library.
-import Svg, { Circle, Line, Path, Polyline, Rect } from 'react-native-svg';
+import Svg, { Circle, Ellipse, Line, Path, Polyline, Rect } from 'react-native-svg';
 
 // A 1.8 stroke with round caps and joins: heavy enough to sit comfortably beside Manrope's
 // semibold labels and to survive on a translucent glass ground, soft enough to match the
@@ -317,6 +317,17 @@ export function ShieldIcon(props) {
     <Glyph {...props}>
       <Path d="M12 3 5 5.8v5.4c0 4.4 2.9 8.2 7 9.8 4.1-1.6 7-5.4 7-9.8V5.8L12 3Z" />
       <Polyline points="8.8 12 11 14.2 15.4 9.8" />
+    </Glyph>
+  );
+}
+
+/** Points bank — a stack of coins. */
+export function CoinsIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Ellipse cx="12" cy="6.5" rx="7" ry="3" />
+      <Path d="M5 6.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
+      <Path d="M5 11.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
     </Glyph>
   );
 }

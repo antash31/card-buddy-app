@@ -15,7 +15,7 @@
 // opens the app at a payment counter, not at leisure. Selection is carried by the lens, the accent
 // colour AND a heavier label, so it never depends on colour alone.
 //
-// Secondary routes that are not tabs (Ask, Tracking, Card details, Wallet audit, CIBIL Protector…) keep their parent tab lit, so
+// Secondary routes that are not tabs (Ask, Tracking, Card details, Wallet audit, CIBIL Protector, Points bank…) keep their parent tab lit, so
 // the user always has an answer to "where am I?".
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -46,6 +46,7 @@ const PARENT_TAB = {
   'wallet-audit': 'index',
   'wallet-categories': 'index',
   'credit-health': 'index',
+  'points-bank': 'index',
 };
 
 const INNER_PADDING = 6;

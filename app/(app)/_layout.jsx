@@ -23,6 +23,7 @@ export default function AppLayout() {
       <Tabs.Screen name="wallet-audit" options={{ href: null }} />
       <Tabs.Screen name="wallet-categories" options={{ href: null }} />
       <Tabs.Screen name="credit-health" options={{ href: null }} />
+      <Tabs.Screen name="points-bank" options={{ href: null }} />
       <Tabs.Screen name="index" options={{ title: 'Nest' }} />
       <Tabs.Screen name="swipemax" options={{ title: 'SwipeMax' }} />
       <Tabs.Screen name="add-card" options={{ title: 'Add' }} />
