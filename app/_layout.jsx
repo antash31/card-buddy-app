@@ -6,8 +6,10 @@ import { useCallback, useRef } from 'react';
 import { View } from 'react-native';
 
 import { BootSplash } from '@/components/layout/BootSplash';
+import { ConnectionIssue } from '@/components/layout/ConnectionIssue';
 import { useAuthGate } from '@/features/auth/hooks/useAuthGate';
 import { useAppReady } from '@/hooks/useAppReady';
+import { useAuthStore } from '@/store/authStore';
 import { AppProviders } from '@/providers/AppProviders';
 import { useTheme } from '@/providers/ThemeProvider';
 
@@ -22,6 +24,8 @@ function RootNavigator() {
   const theme = useTheme();
   const isReady = useAppReady();
   const authStatus = useAuthGate();
+  const retrySession = useAuthStore((state) => state.hydrate);
+  const signOut = useAuthStore((state) => state.signedOut);
 
   // Layout fires again on rotation, keyboard and font-scale changes. Hiding once keeps us from
   // asking the native module to dismiss a splash screen that is already gone.
@@ -51,6 +55,8 @@ function RootNavigator() {
           flashing a screen the user may not belong on. */}
       {authStatus === 'loading' ? (
         <BootSplash />
+      ) : authStatus === 'unreachable' ? (
+        <ConnectionIssue onRetry={() => void retrySession()} onSignOut={() => void signOut()} />
       ) : (
         <Stack
           screenOptions={{

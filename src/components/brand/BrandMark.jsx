@@ -14,6 +14,9 @@ import { useTheme } from '@/providers/ThemeProvider';
 export function BrandMark({ size = 44, showWordmark = true }) {
   const theme = useTheme();
   const plate = size * 0.78;
+  // The wordmark scales with the mark, so its line height must too: the heading style's fixed line
+  // height is shorter than the glyphs at larger sizes, which clips the tops of the letters.
+  const wordmarkSize = size * 0.46 + 4;
   const corner = size * 0.3;
   const { button } = theme.materials;
 
@@ -69,7 +72,8 @@ export function BrandMark({ size = 44, showWordmark = true }) {
             {
               color: theme.colors.text,
               fontFamily: theme.fonts.display.semibold,
-              fontSize: size * 0.46 + 4,
+              fontSize: wordmarkSize,
+              lineHeight: Math.round(wordmarkSize * 1.25),
               letterSpacing: theme.typography.tracking.title,
             },
           ]}

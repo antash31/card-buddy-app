@@ -65,6 +65,11 @@ apiClient.interceptors.response.use(
       original._retried = true;
 
       const refreshed = await refreshAccessToken();
+      if (refreshed === REFRESH_UNAVAILABLE) {
+        // The refresh could not be attempted (offline, server down). The session is not known to be
+        // dead, so report this as the connection problem it is, not as the 401 that started it.
+        throw new ApiError({ message: UNREACHABLE_MESSAGE, code: 'network_error', status: 0 });
+      }
       if (refreshed) {
         original.headers = { ...original.headers, Authorization: `Bearer ${refreshed}` };
         return apiClient(original);
@@ -86,6 +91,10 @@ apiClient.interceptors.response.use(
     throw apiError;
   },
 );
+
+/** Returned instead of a token when the refresh could not be tried; the session is still valid. */
+const REFRESH_UNAVAILABLE = Symbol('refresh-unavailable');
+const UNREACHABLE_MESSAGE = 'Could not reach Card Buddy. Check your connection and try again.';
 
 // Concurrent 401s must trigger exactly one refresh; the rest await the same promise, otherwise
 // each parallel request would burn a separate (single-use) refresh token.
@@ -133,6 +142,9 @@ async function performRefresh() {
     return session.accessToken;
   } catch (error) {
     logger.warn('api', 'session refresh failed', error?.message);
+    // Only a refusal ends the session. A dropped connection, a timeout or a 5xx while refreshing must
+    // not: the refresh token is probably still good and a retry will work.
+    if (error instanceof ApiError && error.isTransient) return REFRESH_UNAVAILABLE;
     notifySessionExpired();
     return null;
   }

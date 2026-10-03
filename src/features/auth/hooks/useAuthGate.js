@@ -38,8 +38,10 @@ export function useAuthGate() {
   }, [resetOnboardingFlow, status]);
 
   useEffect(() => {
-    // Nothing is known yet — redirecting now would guess wrong half the time.
-    if (status === 'loading') return;
+    // Nothing is known yet — redirecting now would guess wrong half the time. The same goes for
+    // 'unreachable': the root layout shows a retry screen instead of the navigator, so there is no
+    // navigator to redirect, and sending the user to sign-in would discard a session that is fine.
+    if (status === 'loading' || status === 'unreachable') return;
 
     const group = segments[0];
     const inAuthFlow = group === '(auth)';
