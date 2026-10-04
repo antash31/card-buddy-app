@@ -20,7 +20,7 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(async (key) => void mockStorage.delete(key)),
 }));
 jest.mock('@/lib/notifications', () => ({ cancelByPrefix: jest.fn(async () => 0) }));
-jest.mock('@/lib/logger', () => ({ logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } }));
+jest.mock('@/lib/logger', () => ({ logger: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() } }));
 jest.mock('@/features/tracking/native', () => ({
   nativeSession: jest.fn(async () => null),
   clearSmsOnLogout: jest.fn(async () => undefined),

@@ -2,7 +2,7 @@
 import { ID_PREFIX } from './reminders';
 import { clearReminders, syncReminders } from './reminderSync';
 
-jest.mock('@/lib/logger', () => ({ logger: { debug: jest.fn(), info: jest.fn(), warn: jest.fn(), error: jest.fn() } }));
+jest.mock('@/lib/logger', () => ({ logger: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() } }));
 jest.mock('@/lib/notifications', () => ({}));
 
 const NOW = new Date(2026, 9, 3, 10, 0, 0);

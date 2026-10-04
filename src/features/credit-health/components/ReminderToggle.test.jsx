@@ -75,6 +75,30 @@ describe('turning reminders on', () => {
   });
 });
 
+describe('when the permission request itself fails', () => {
+  test('stays off and says so, rather than blaming the system settings', async () => {
+    mockRequestPermission.mockRejectedValue(new Error('native module unavailable'));
+    render(<ReminderToggle hasDates />);
+
+    await flip(true);
+
+    expect(useReminderStore.getState().enabled).toBe(false);
+    expect(screen.getByText('Could not turn reminders on. Please try again.')).toBeTruthy();
+    expect(screen.queryByText(/turned off for Card Buddy/)).toBeNull();
+  });
+
+  test('clears that message on the next try', async () => {
+    mockRequestPermission.mockRejectedValueOnce(new Error('boom')).mockResolvedValueOnce('granted');
+    render(<ReminderToggle hasDates />);
+
+    await flip(true);
+    await flip(true);
+
+    expect(screen.queryByText('Could not turn reminders on. Please try again.')).toBeNull();
+    expect(useReminderStore.getState().enabled).toBe(true);
+  });
+});
+
 describe('turning reminders off', () => {
   test('does not ask for anything', async () => {
     useReminderStore.setState({ enabled: true });

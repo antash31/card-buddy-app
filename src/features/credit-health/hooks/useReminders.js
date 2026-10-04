@@ -11,16 +11,28 @@ export function useReminderToggle() {
   const enabled = useReminderStore((state) => state.enabled);
   const setEnabled = useReminderStore((state) => state.setEnabled);
   const [blocked, setBlocked] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const toggle = useCallback(
     async (next) => {
       if (!next) {
         setBlocked(false);
+        setFailed(false);
         setEnabled(false);
         return;
       }
 
-      const status = await requestPermission();
+      let status;
+      try {
+        status = await requestPermission();
+      } catch {
+        // The request itself failed (not a refusal). Say that, and leave the switch off.
+        setFailed(true);
+        setEnabled(false);
+        return;
+      }
+
+      setFailed(false);
       if (status === 'granted') {
         setBlocked(false);
         setEnabled(true);
@@ -37,6 +49,7 @@ export function useReminderToggle() {
     supported: notificationsSupported,
     enabled,
     blocked,
+    failed,
     toggle,
     openSettings: () => Linking.openSettings(),
   };

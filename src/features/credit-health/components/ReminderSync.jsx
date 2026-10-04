@@ -9,6 +9,7 @@ import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { AppState } from 'react-native';
 
+import { logger } from '@/lib/logger';
 import { configureNotifications, onNotificationOpened } from '@/lib/notifications';
 import { useAuthStore } from '@/store/authStore';
 
@@ -34,7 +35,10 @@ export function ReminderSync() {
 
   useEffect(() => {
     if (!hydrated || !signedIn) return;
-    void syncReminders({ overview: data, enabled });
+    // A reminder that cannot be scheduled is a missing nudge, never a crash.
+    syncReminders({ overview: data, enabled }).catch((error) => {
+      logger.warn('reminders', 'sync failed', error?.message);
+    });
   }, [data, enabled, hydrated, signedIn]);
 
   useEffect(() => {

@@ -42,7 +42,7 @@ export async function syncReminders({ overview, enabled, now = new Date(), api =
   // Ask the system what it actually holds, not just what we asked for: a scheduling call that
   // resolves is not proof the notification is pending.
   const pending = await api.countByPrefix(ID_PREFIX);
-  logger.info('reminders', `scheduled ${scheduled} credit reminders; system has ${pending} pending`);
+  logger.debug('reminders', `scheduled ${scheduled} credit reminders; system has ${pending} pending`);
   return { scheduled };
 }
 

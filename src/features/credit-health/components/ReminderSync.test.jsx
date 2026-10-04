@@ -24,6 +24,7 @@ jest.mock('@tanstack/react-query', () => ({ useQueryClient: () => ({ invalidateQ
 jest.mock('@/store/authStore', () => ({
   useAuthStore: (selector) => selector({ status: mockStatus }),
 }));
+jest.mock('@/lib/logger', () => ({ logger: { debug: jest.fn(), warn: jest.fn(), error: jest.fn() } }));
 jest.mock('@/lib/notifications', () => ({
   configureNotifications: jest.fn(),
   onNotificationOpened: (handler) => {
@@ -87,6 +88,18 @@ describe('keeping reminders in step with the data', () => {
   test('asks for the data only when signed in', () => {
     render(<ReminderSync />);
     expect(mockUseCreditOverview).toHaveBeenCalledWith({ enabled: true });
+  });
+
+  test('a sync that fails is logged, not thrown', async () => {
+    mockSync.mockRejectedValue(new Error('scheduling blew up'));
+    const unhandled = jest.fn();
+    process.on('unhandledRejection', unhandled);
+
+    render(<ReminderSync />);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    process.off('unhandledRejection', unhandled);
+    expect(unhandled).not.toHaveBeenCalled();
   });
 
   test('hydrates the saved preference on mount', () => {

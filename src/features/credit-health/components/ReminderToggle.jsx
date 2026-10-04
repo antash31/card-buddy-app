@@ -14,7 +14,7 @@ import { STATEMENT_LEAD_DAYS, DUE_LEAD_DAYS } from '../lib/reminders';
 
 export function ReminderToggle({ hasDates }) {
   const theme = useTheme();
-  const { supported, enabled, blocked, toggle, openSettings } = useReminderToggle();
+  const { supported, enabled, blocked, failed, toggle, openSettings } = useReminderToggle();
 
   if (!supported) return null;
 
@@ -42,6 +42,12 @@ export function ReminderToggle({ hasDates }) {
       {!hasDates ? (
         <Text style={[theme.textStyles.caption, { color: theme.colors.textMuted }]}>
           Add a statement day to a card first. Reminders follow those dates.
+        </Text>
+      ) : null}
+
+      {failed ? (
+        <Text style={[theme.textStyles.caption, { color: theme.colors.warning }]}>
+          Could not turn reminders on. Please try again.
         </Text>
       ) : null}
 
