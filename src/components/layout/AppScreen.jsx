@@ -1,13 +1,13 @@
 // #genai: Shell for the signed-in area.
 //
-// The generous horizontal gutter is the point, not an accident — wide margins are what make a page
-// read as "this content was worth the paper". Content scrolls under the tab bar (which is
-// translucent) but the bottom padding reserves the bar's full height plus the home-indicator inset,
-// so the last row is always reachable rather than trapped behind the chrome.
+// Content scrolls *under* the floating tab capsule — which is why the capsule can be glass at all,
+// since there is real content moving behind it to blur. The bottom padding reserves the capsule's
+// full height plus its gap and the home-indicator inset, so the last card is always reachable
+// rather than trapped behind the chrome.
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { PaperBackground } from '@/components/surfaces/PaperBackground';
+import { AmbientBackground } from '@/components/surfaces/AmbientBackground';
 import { useTheme } from '@/providers/ThemeProvider';
 
 export function AppScreen({ children, scroll = true, contentStyle, stickyFooter, refreshControl }) {
@@ -15,14 +15,17 @@ export function AppScreen({ children, scroll = true, contentStyle, stickyFooter,
   const insets = useSafeAreaInsets();
 
   const padding = {
-    paddingTop: insets.top + theme.spacing.xl,
+    paddingTop: insets.top + theme.spacing.lg,
     paddingHorizontal: theme.metrics.gutter,
-    paddingBottom: insets.bottom + theme.metrics.tabBarHeight + theme.spacing.xxl,
+    paddingBottom: insets.bottom + theme.metrics.tabBarReserve,
   };
+
+  // Soft cards need room to breathe: 20pt between them, a touch more than a typical list gap.
+  const gap = theme.spacing.lg + theme.spacing.xs;
 
   const body = scroll ? (
     <ScrollView
-      contentContainerStyle={[styles.content, padding, { gap: theme.spacing.xl }, contentStyle]}
+      contentContainerStyle={[styles.content, padding, { gap }, contentStyle]}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="interactive"
       showsVerticalScrollIndicator={false}
@@ -31,13 +34,11 @@ export function AppScreen({ children, scroll = true, contentStyle, stickyFooter,
       {children}
     </ScrollView>
   ) : (
-    <View style={[styles.content, padding, { gap: theme.spacing.xl }, contentStyle]}>
-      {children}
-    </View>
+    <View style={[styles.content, padding, { gap }, contentStyle]}>{children}</View>
   );
 
   return (
-    <PaperBackground>
+    <AmbientBackground>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -45,7 +46,7 @@ export function AppScreen({ children, scroll = true, contentStyle, stickyFooter,
         {body}
         {stickyFooter}
       </KeyboardAvoidingView>
-    </PaperBackground>
+    </AmbientBackground>
   );
 }
 

@@ -1,18 +1,19 @@
 // #genai: Shared shell for auth and onboarding screens.
 //
-// The paper runs edge to edge and content scrolls over it, rather than the background being boxed
-// into a fixed strip. Safe-area insets are applied to the content, not the canvas, so the ground
-// reaches the very edges of the display.
+// The lit canvas runs edge to edge and content scrolls over it, rather than the background being
+// boxed into a fixed strip. Safe-area insets are applied to the content, not the canvas, so the
+// ground reaches the very edges of the display.
 //
-// The back affordance is a bare arrow rather than a circular chip. A chip is a container drawn for a
-// single glyph, and the arrow already reads as "back" at the top-left of a page.
+// The back affordance is a small glass lens — the round "<" control from the reference. Unlike the
+// old bare arrow it is a real, visible target, which matters now that the page behind it is busy
+// with colour.
 import { useRouter } from 'expo-router';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { IconButton } from '@/components/actions/IconButton';
 import { ArrowLeftIcon } from '@/components/icons';
-import { PressableScale } from '@/components/motion/PressableScale';
-import { PaperBackground } from '@/components/surfaces/PaperBackground';
+import { AmbientBackground } from '@/components/surfaces/AmbientBackground';
 import { useTheme } from '@/providers/ThemeProvider';
 
 export function AuthLayout({ children, showBack = false, onBack, footer, contentStyle }) {
@@ -29,7 +30,7 @@ export function AuthLayout({ children, showBack = false, onBack, footer, content
   };
 
   return (
-    <PaperBackground>
+    <AmbientBackground>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -39,7 +40,7 @@ export function AuthLayout({ children, showBack = false, onBack, footer, content
           contentContainerStyle={[
             styles.content,
             {
-              paddingTop: insets.top + theme.spacing.lg,
+              paddingTop: insets.top + theme.spacing.md,
               paddingBottom: insets.bottom + theme.spacing.xxl,
               paddingHorizontal: theme.metrics.gutter,
               gap: theme.spacing.xl,
@@ -51,16 +52,12 @@ export function AuthLayout({ children, showBack = false, onBack, footer, content
           showsVerticalScrollIndicator={false}
         >
           {showBack && (
-            <PressableScale
+            <IconButton
               accessibilityLabel="Go back"
-              haptic="selection"
+              icon={ArrowLeftIcon}
               onPress={handleBack}
-              scaleTo={0.88}
-              hitSlop={{ top: 16, bottom: 16, left: 16, right: 24 }}
-              style={styles.backButton}
-            >
-              <ArrowLeftIcon size={22} color={theme.colors.text} />
-            </PressableScale>
+              style={styles.back}
+            />
           )}
 
           {children}
@@ -77,7 +74,7 @@ export function AuthLayout({ children, showBack = false, onBack, footer, content
           </View>
         )}
       </KeyboardAvoidingView>
-    </PaperBackground>
+    </AmbientBackground>
   );
 }
 
@@ -88,11 +85,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
   },
-  backButton: {
-    width: 30,
-    height: 30,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
+  back: {
     alignSelf: 'flex-start',
   },
 });

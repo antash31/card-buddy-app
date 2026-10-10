@@ -1,8 +1,15 @@
-// #genai: Text input with a floating label.
+// #genai: Text input with a floating label — a soft white field with a glowing focus state.
 //
 // The label is a single element that springs between two states rather than two labels
 // cross-fading, so focus, blur and typing can interrupt each other without a flicker. Border and
-// ring colours are interpolated on the UI thread so the focus response has no frame of latency.
+// glow are interpolated on the UI thread so the focus response has no frame of latency.
+//
+// Two layers again: the outer view owns the (animated) shadow, the inner pressable owns the border
+// and fill. On focus the shadow turns blue and widens, which is what reads as the field "lighting
+// up" — a coloured border alone looks like a form from 2015.
+//
+// The leading icon sits in a small rounded tile that tints blue with focus, echoing the icon tiles
+// in the reference design.
 import { forwardRef, useCallback, useId, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Animated, {
@@ -16,13 +23,15 @@ import Animated, {
 
 import { EyeIcon, EyeOffIcon } from '@/components/icons';
 import { PressableScale } from '@/components/motion/PressableScale';
+import { useSurfaceGround } from '@/components/surfaces/SurfaceContext';
 import { useReduceMotion } from '@/hooks/useMotionPreferences';
 import { useTheme } from '@/providers/ThemeProvider';
 import { springs, timings } from '@/theme/motion';
 
 import { FieldError } from './FieldError';
 
-const FIELD_HEIGHT = 60;
+const MULTILINE_MIN_HEIGHT = 120;
+const TILE = 36;
 
 // The whole field is the tap target, not just the ~20pt line the text sits on.
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -45,6 +54,7 @@ export const TextField = forwardRef(function TextField(
 ) {
   const theme = useTheme();
   const reduceMotion = useReduceMotion();
+  const ground = useSurfaceGround();
   const inputId = useId();
 
   const [focused, setFocused] = useState(false);
@@ -91,7 +101,7 @@ export const TextField = forwardRef(function TextField(
 
   const { field } = theme.materials;
 
-  const containerStyle = useAnimatedStyle(() => {
+  const borderStyle = useAnimatedStyle(() => {
     const focusColor = interpolateColor(
       focusProgress.value,
       [0, 1],
@@ -100,11 +110,34 @@ export const TextField = forwardRef(function TextField(
 
     return {
       borderColor: interpolateColor(errorProgress.value, [0, 1], [focusColor, field.borderError]),
-      // The ring is what makes focus feel like a physical state change rather than a colour tweak.
-      shadowOpacity: interpolate(focusProgress.value, [0, 1], [0, 1]),
-      shadowRadius: interpolate(focusProgress.value, [0, 1], [0, 6]),
     };
   }, [field]);
+
+  // The glow. Interpolating the soft resting shadow into a wider, coloured one is what makes focus
+  // feel like a physical state change rather than a colour tweak.
+  const glowStyle = useAnimatedStyle(() => {
+    const ringColor = interpolateColor(
+      errorProgress.value,
+      [0, 1],
+      [field.borderFocused, field.borderError],
+    );
+    const emphasis = Math.max(focusProgress.value, errorProgress.value);
+
+    return {
+      shadowColor: interpolateColor(
+        emphasis,
+        [0, 1],
+        [theme.materials.shadow.sm.shadowColor, ringColor],
+      ),
+      // On a card the field is recessed, so it carries no resting shadow — only the focus glow.
+      shadowOpacity: interpolate(
+        emphasis,
+        [0, 1],
+        [ground === 'card' ? 0 : theme.materials.shadow.sm.shadowOpacity, 0.3],
+      ),
+      shadowRadius: interpolate(emphasis, [0, 1], [10, 16]),
+    };
+  }, [field, ground, theme.materials.shadow.sm]);
 
   const labelStyle = useAnimatedStyle(() => {
     const color = interpolateColor(
@@ -144,91 +177,123 @@ export const TextField = forwardRef(function TextField(
       ? field.borderFocused
       : theme.colors.textMuted;
 
+  const multiline = Boolean(inputProps.multiline);
+  const tileBackground = error
+    ? theme.colors.dangerSubtle
+    : focused
+      ? theme.colors.primarySubtle
+      : theme.colors.surfaceAlt;
+
   return (
     <View style={styles.wrapper}>
-      <AnimatedPressable
-        accessible={false}
-        disabled={!editable}
-        onPress={focusInput}
+      <Animated.View
         style={[
-          styles.container,
           {
-            height: FIELD_HEIGHT,
-            borderRadius: theme.radius.md,
-            backgroundColor: field.background,
-            shadowColor: error ? field.borderError : field.borderFocused,
-            paddingHorizontal: theme.spacing.lg,
-            gap: theme.spacing.md,
+            borderRadius: theme.radius.lg,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: ground === 'card' ? 0 : 2,
           },
-          !editable && styles.disabled,
-          containerStyle,
+          glowStyle,
         ]}
       >
-        {LeftIcon && <LeftIcon size={20} color={iconColor} />}
-
-        <View style={styles.inputColumn}>
-          <Animated.Text
-            nativeID={inputId}
-            pointerEvents="none"
-            numberOfLines={1}
-            style={[
-              styles.label,
-              {
-                fontFamily: theme.fonts.text.regular,
-                fontSize: theme.typography.fontSize.body,
-                letterSpacing: theme.typography.tracking.body,
-              },
-              labelStyle,
-            ]}
-          >
-            {label}
-          </Animated.Text>
-
-          <View style={styles.inputHolder}>
-            <TextInput
-              ref={attachInput}
-              accessibilityLabel={label}
-              accessibilityLabelledBy={inputId}
-              editable={editable}
-              onBlur={handleBlur}
-              onChangeText={onChangeText}
-              onFocus={handleFocus}
-              placeholderTextColor={theme.colors.textMuted}
-              secureTextEntry={secureTextEntry && !revealed}
-              selectionColor={field.borderFocused}
+        <AnimatedPressable
+          accessible={false}
+          disabled={!editable}
+          onPress={focusInput}
+          style={[
+            styles.container,
+            {
+              height: multiline ? undefined : theme.metrics.fieldHeight,
+              minHeight: multiline ? MULTILINE_MIN_HEIGHT : undefined,
+              alignItems: multiline ? 'flex-start' : 'center',
+              paddingVertical: multiline ? theme.spacing.lg : 0,
+              borderRadius: theme.radius.lg,
+              backgroundColor: ground === 'card' ? field.onCard : field.background,
+              paddingLeft: LeftIcon ? theme.spacing.md : theme.spacing.lg + theme.spacing.xs,
+              paddingRight: theme.spacing.lg,
+              gap: theme.spacing.md,
+            },
+            !editable && styles.disabled,
+            borderStyle,
+          ]}
+        >
+          {LeftIcon && (
+            <View
               style={[
-                styles.input,
+                styles.tile,
+                { backgroundColor: tileBackground, borderRadius: theme.radius.sm },
+              ]}
+            >
+              <LeftIcon size={18} color={iconColor} />
+            </View>
+          )}
+
+          <View style={styles.inputColumn}>
+            <Animated.Text
+              nativeID={inputId}
+              pointerEvents="none"
+              numberOfLines={1}
+              style={[
+                styles.label,
                 {
-                  color: theme.colors.text,
-                  fontFamily: theme.fonts.text.medium,
+                  fontFamily: theme.fonts.text.regular,
                   fontSize: theme.typography.fontSize.body,
                   letterSpacing: theme.typography.tracking.body,
                 },
-                // The field draws its own focus ring; the browser default would sit on top of it.
-                Platform.OS === 'web' && styles.webInput,
+                multiline && { top: 0 },
+                labelStyle,
               ]}
-              value={value}
-              {...inputProps}
-            />
-          </View>
-        </View>
+            >
+              {label}
+            </Animated.Text>
 
-        {secureTextEntry && (
-          <PressableScale
-            accessibilityLabel={revealed ? 'Hide password' : 'Show password'}
-            accessibilityRole="button"
-            haptic="selection"
-            onPress={() => setRevealed((previous) => !previous)}
-            scaleTo={0.88}
-          >
-            {revealed ? (
-              <EyeOffIcon size={20} color={theme.colors.textMuted} />
-            ) : (
-              <EyeIcon size={20} color={theme.colors.textMuted} />
-            )}
-          </PressableScale>
-        )}
-      </AnimatedPressable>
+            <View style={[styles.inputHolder, multiline && { marginTop: 22 }]}>
+              <TextInput
+                ref={attachInput}
+                accessibilityLabel={label}
+                accessibilityLabelledBy={inputId}
+                editable={editable}
+                onBlur={handleBlur}
+                onChangeText={onChangeText}
+                onFocus={handleFocus}
+                placeholderTextColor={theme.colors.textMuted}
+                secureTextEntry={secureTextEntry && !revealed}
+                selectionColor={field.borderFocused}
+                style={[
+                  styles.input,
+                  {
+                    color: theme.colors.text,
+                    fontFamily: theme.fonts.text.medium,
+                    fontSize: theme.typography.fontSize.body,
+                    letterSpacing: theme.typography.tracking.body,
+                  },
+                  multiline && { minHeight: 64, textAlignVertical: 'top' },
+                  // The field draws its own focus ring; the browser default would sit on top of it.
+                  Platform.OS === 'web' && styles.webInput,
+                ]}
+                value={value}
+                {...inputProps}
+              />
+            </View>
+          </View>
+
+          {secureTextEntry && (
+            <PressableScale
+              accessibilityLabel={revealed ? 'Hide password' : 'Show password'}
+              accessibilityRole="button"
+              haptic="selection"
+              onPress={() => setRevealed((previous) => !previous)}
+              scaleTo={0.88}
+            >
+              {revealed ? (
+                <EyeOffIcon size={20} color={theme.colors.textMuted} />
+              ) : (
+                <EyeIcon size={20} color={theme.colors.textMuted} />
+              )}
+            </PressableScale>
+          )}
+        </AnimatedPressable>
+      </Animated.View>
 
       <FieldError message={error} helperText={helperText} />
     </View>
@@ -241,10 +306,13 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
+    borderWidth: 1.5,
+  },
+  tile: {
+    width: TILE,
+    height: TILE,
     alignItems: 'center',
-    borderWidth: 1,
-    shadowOffset: { width: 0, height: 0 },
-    elevation: 0,
+    justifyContent: 'center',
   },
   disabled: {
     opacity: 0.6,

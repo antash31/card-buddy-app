@@ -1,8 +1,11 @@
-// #genai: Inline textual action (e.g. "Forgot password?").
+// #genai: Inline textual action (e.g. "Forgot password?", "Remove").
 //
-// Padded well beyond the glyphs so the tap target clears the 44pt minimum even though the text
-// itself is small. The rule under the label is what marks it as an action — colour alone is not a
-// sufficient affordance, and it is invisible to anyone with a red-green deficiency.
+// Blue semibold text — the same treatment as "Upgrade my plan" in the reference. Padded well beyond
+// the glyphs so the tap target clears the 44pt minimum even though the text itself is small.
+//
+// Colour alone is a weak affordance (invisible with a colour-vision deficiency), so a link in the
+// middle of a sentence should pass `underline`. Standalone links — a row on its own, in the blue
+// accent colour, with a verb for a label — are recognisable without one.
 import { StyleSheet, Text, View } from 'react-native';
 
 import { PressableScale } from '@/components/motion/PressableScale';
@@ -13,7 +16,7 @@ export function TextLink({
   onPress,
   tone = 'primary',
   align = 'center',
-  underline = true,
+  underline = false,
   style,
 }) {
   const theme = useTheme();
@@ -30,18 +33,12 @@ export function TextLink({
       accessibilityLabel={label}
       haptic="selection"
       onPress={onPress}
-      scaleTo={0.97}
+      scaleTo={0.96}
       dimTo={0.6}
       style={[styles.shell, { alignSelf: align === 'center' ? 'center' : 'flex-start' }, style]}
     >
       <View style={styles.stack}>
-        <Text
-          style={[
-            theme.textStyles.label,
-            styles.label,
-            { color, fontFamily: theme.fonts.text.semibold },
-          ]}
-        >
+        <Text style={[theme.textStyles.label, { color, fontFamily: theme.fonts.text.semibold }]}>
           {label}
         </Text>
         {underline ? <View style={[styles.rule, { backgroundColor: color }]} /> : null}
@@ -58,11 +55,8 @@ const styles = StyleSheet.create({
   stack: {
     gap: 3,
   },
-  label: {
-    letterSpacing: 0.15,
-  },
   rule: {
-    height: StyleSheet.hairlineWidth,
+    height: StyleSheet.hairlineWidth * 2,
     // The rule tracks the label's width rather than the padded target, so it reads as an underline
     // and not as a divider.
     alignSelf: 'stretch',

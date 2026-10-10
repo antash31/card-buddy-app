@@ -1,7 +1,8 @@
-// #genai: Standard screen wrapper: themed background + safe-area padding.
+// #genai: Standard screen wrapper: lit canvas + safe-area padding.
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AmbientBackground } from '@/components/surfaces/AmbientBackground';
 import { useTheme } from '@/providers/ThemeProvider';
 
 export function Screen({ children, scrollable = false, padded = true, style }) {
@@ -11,7 +12,6 @@ export function Screen({ children, scrollable = false, padded = true, style }) {
   const containerStyle = [
     styles.flex,
     {
-      backgroundColor: theme.colors.background,
       paddingTop: insets.top,
       paddingBottom: insets.bottom,
       paddingLeft: insets.left,
@@ -23,19 +23,25 @@ export function Screen({ children, scrollable = false, padded = true, style }) {
 
   if (scrollable) {
     return (
-      <View style={containerStyle}>
-        <ScrollView
-          contentContainerStyle={contentStyle}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
-      </View>
+      <AmbientBackground>
+        <View style={containerStyle}>
+          <ScrollView
+            contentContainerStyle={contentStyle}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {children}
+          </ScrollView>
+        </View>
+      </AmbientBackground>
     );
   }
 
-  return <View style={[...containerStyle, ...contentStyle]}>{children}</View>;
+  return (
+    <AmbientBackground>
+      <View style={[...containerStyle, ...contentStyle]}>{children}</View>
+    </AmbientBackground>
+  );
 }
 
 const styles = StyleSheet.create({

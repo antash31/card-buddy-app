@@ -20,54 +20,57 @@ export const spacing = {
 };
 
 /**
- * Deliberately tight. Heavy rounding reads as friendly-consumer; a printed statement has crisp
- * corners. `full` exists only for genuinely circular things (avatars, dots).
+ * Generous, and nested on purpose. A surface's radius is always larger than the radius of anything
+ * sitting inside it (outer = inner + padding), which is what makes stacked soft cards look
+ * machined rather than blobby. `full` is for pills, avatars and dots.
  */
 export const radius = {
   none: 0,
-  xs: 3,
-  sm: 5,
-  md: 8,
-  lg: 11,
-  xl: 14,
-  xxl: 18,
+  xs: 8,
+  sm: 12,
+  md: 16,
+  lg: 22,
+  xl: 28,
+  xxl: 36,
   full: 999,
 };
 
 /**
- * Fixed px steps, not fluid clamps: this is a product UI, not a marketing page, and no major
- * design system ships fluid type in an app shell. Ratios sit at ~1.25–1.3 from `body` upward so
- * hierarchy is unmistakable at a glance.
+ * Fixed px steps, not fluid clamps: this is a product UI, not a marketing page. Ratios sit at
+ * ~1.25 from `body` upward so hierarchy is unmistakable at a glance.
  */
 export const typography = {
   fontSize: {
     micro: 11,
     caption: 13,
     body: 16,
-    heading: 20,
-    title: 26,
-    display: 34,
-    hero: 44,
+    heading: 19,
+    title: 25,
+    display: 33,
+    hero: 42,
+    figure: 38,
   },
   lineHeight: {
     micro: 14,
     caption: 18,
     body: 24,
-    heading: 26,
+    heading: 25,
     title: 30,
     display: 38,
     hero: 46,
+    figure: 42,
   },
-  // Tracking is size-specific, never one value for every size: letters read too far apart as type
-  // grows and too tight as it shrinks. The Didone in particular needs pulling in at hero size.
+  // Tracking is size-specific, never one value for every size: heavy type reads loose as it grows
+  // and needs pulling in, while tiny caps need opening up to stay legible.
   tracking: {
-    micro: 1.2,
-    caption: 0.1,
+    micro: 0.9,
+    caption: 0,
     body: 0,
-    heading: -0.2,
-    title: -0.4,
-    display: -0.8,
-    hero: -1.2,
+    heading: -0.3,
+    title: -0.6,
+    display: -1,
+    hero: -1.5,
+    figure: -1.2,
   },
 };
 
@@ -76,13 +79,14 @@ export const typography = {
  * Note the absence of `fontWeight` — see the note in `fonts.js`.
  */
 export const textStyles = {
-  /** Once per screen at most. Bodoni at 44px is the loudest thing in the product. */
+  /** Once per screen at most — the headline of a landing moment. */
   hero: {
     fontFamily: fonts.display.bold,
     fontSize: typography.fontSize.hero,
     lineHeight: typography.lineHeight.hero,
     letterSpacing: typography.tracking.hero,
   },
+  /** Screen titles. */
   display: {
     fontFamily: fonts.display.bold,
     fontSize: typography.fontSize.display,
@@ -95,7 +99,6 @@ export const textStyles = {
     lineHeight: typography.lineHeight.title,
     letterSpacing: typography.tracking.title,
   },
-  /** Section headings drop to the grotesque — a serif at 20px starts to look like a mistake. */
   heading: {
     fontFamily: fonts.text.semibold,
     fontSize: typography.fontSize.heading,
@@ -109,7 +112,7 @@ export const textStyles = {
     letterSpacing: typography.tracking.body,
   },
   bodyStrong: {
-    fontFamily: fonts.text.medium,
+    fontFamily: fonts.text.semibold,
     fontSize: typography.fontSize.body,
     lineHeight: typography.lineHeight.body,
     letterSpacing: typography.tracking.body,
@@ -127,8 +130,8 @@ export const textStyles = {
     letterSpacing: typography.tracking.caption,
   },
   /**
-   * The statement label: small, wide-tracked caps used to title a region the way a printed
-   * statement titles a column. Carries a lot of the aesthetic — use it instead of a bigger heading.
+   * The eyebrow: small, tracked caps. It names a region ("WALLET", "LAST ACTIONS") above the thing
+   * it labels, and is the one place a counter or blue emphasis is allowed to ride along.
    */
   micro: {
     fontFamily: fonts.text.semibold,
@@ -137,42 +140,72 @@ export const textStyles = {
     letterSpacing: typography.tracking.micro,
     textTransform: 'uppercase',
   },
+  /** Big money. The balance tile, a verdict amount. */
+  figure: {
+    fontFamily: fonts.display.bold,
+    fontSize: typography.fontSize.figure,
+    lineHeight: typography.lineHeight.figure,
+    letterSpacing: typography.tracking.figure,
+    fontVariant: ['tabular-nums'],
+  },
   /** Figures that sit in a column and must not jitter as they change. */
   numeric: {
-    fontFamily: fonts.text.medium,
+    fontFamily: fonts.text.semibold,
     fontSize: typography.fontSize.body,
     lineHeight: typography.lineHeight.body,
     fontVariant: ['tabular-nums'],
   },
+  /** Button labels. */
+  button: {
+    fontFamily: fonts.text.semibold,
+    fontSize: typography.fontSize.body,
+    lineHeight: typography.lineHeight.body,
+    letterSpacing: -0.1,
+  },
 };
 
 /**
- * Almost nothing in this design is elevated. Shadows are reserved for surfaces that genuinely
- * float above scrolling content — in practice, the tab bar.
+ * Soft, blue-tinted, long and low. Shadows are how a card says "I am above the canvas", so every
+ * raised surface carries one; their colour is the ink tone at low alpha, never pure black, so they
+ * read as shade rather than dirt. Dark mode swaps them for deeper, tighter ones (see `materials`).
  */
 export const shadow = {
   none: {},
   sm: {
-    shadowColor: '#120C07',
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#1B2A4E',
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 2,
   },
   md: {
-    shadowColor: '#120C07',
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: -2 },
-    elevation: 6,
+    shadowColor: '#1B2A4E',
+    shadowOpacity: 0.09,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 5,
+  },
+  lg: {
+    shadowColor: '#1B2A4E',
+    shadowOpacity: 0.15,
+    shadowRadius: 38,
+    shadowOffset: { width: 0, height: 18 },
+    elevation: 10,
   },
 };
 
-/** Field height, tab bar height and the like — shared so screens can reserve exact space. */
+/** Control heights, tab bar geometry and the like — shared so screens can reserve exact space. */
 export const metrics = {
   fieldHeight: 60,
-  buttonHeight: 54,
-  tabBarHeight: 60,
-  /** The horizontal margin that gives the "wide margins on good paper" feel. */
-  gutter: 24,
+  buttonHeight: 56,
+  /** Round icon buttons: back, add, send. */
+  iconButton: 44,
+  /** The floating tab capsule's own height. */
+  tabBarHeight: 66,
+  /** Gap between the capsule and the bottom safe-area edge. */
+  tabBarGap: 10,
+  /** Room a scrolling screen must leave under its content so the last row clears the capsule. */
+  tabBarReserve: 66 + 10 + 24,
+  /** Horizontal page margin. */
+  gutter: 20,
 };

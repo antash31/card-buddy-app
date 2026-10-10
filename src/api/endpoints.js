@@ -33,6 +33,29 @@ export const endpoints = {
     remove: (userCardId) => `/user-cards/${userCardId}/remove`,
   },
 
+  wallet: {
+    status: '/wallet/status',
+    audit: '/wallet/audit',
+    categorisation: '/wallet/categorisation',
+    facts: '/wallet/facts',
+  },
+
+  creditHealth: {
+    overview: '/credit-health',
+    card: (userCardId) => `/credit-health/cards/${userCardId}`,
+  },
+
+  pointsBank: {
+    overview: '/points-bank',
+    balance: (userCardId) => `/points-bank/cards/${userCardId}/balance`,
+  },
+
+  recommendations: {
+    root: '/recommendations',
+    form: '/recommendations/form',
+    preview: '/recommendations/preview',
+  },
+
   swipemax: {
     compare: '/swipemax/compare',
     capConsumption: (capId) => `/swipemax/caps/${capId}/consumption`,

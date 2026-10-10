@@ -1,7 +1,7 @@
 // #genai: OAuth provider button.
 //
-// Providers keep their own brand marks, so this is intentionally neutral: the surface matches the
-// page and the logo supplies the only colour on it.
+// Providers keep their own brand marks, so this is intentionally neutral: a soft white pill that
+// matches the secondary button, with the logo supplying the only colour on it.
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { AppleIcon, GoogleIcon } from '@/components/icons';
@@ -29,14 +29,15 @@ export function SocialButton({ provider, onPress, loading = false, disabled = fa
       disabled={isInactive}
       haptic="selection"
       onPress={onPress}
-      scaleTo={0.98}
+      scaleTo={0.97}
       style={[
         styles.shell,
         {
           height: theme.metrics.buttonHeight,
-          borderRadius: theme.radius.md,
+          borderRadius: theme.radius.full,
           borderColor: theme.colors.border,
-          backgroundColor: theme.colors.surface,
+          backgroundColor: theme.materials.card.background,
+          ...theme.materials.shadow.sm,
         },
         style,
       ]}
@@ -46,8 +47,8 @@ export function SocialButton({ provider, onPress, loading = false, disabled = fa
           <ActivityIndicator size="small" color={theme.colors.text} />
         ) : (
           <>
-            <Icon size={19} color={provider === 'apple' ? theme.colors.text : undefined} />
-            <Text style={[theme.textStyles.bodyStrong, { color: theme.colors.text }]}>{label}</Text>
+            <Icon size={20} color={provider === 'apple' ? theme.colors.text : undefined} />
+            <Text style={[theme.textStyles.button, { color: theme.colors.text }]}>{label}</Text>
           </>
         )}
       </View>
@@ -60,7 +61,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
   },
   content: {
     flexDirection: 'row',

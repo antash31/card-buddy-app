@@ -1,10 +1,10 @@
-// #genai: A hairline rule — the workhorse of this design system.
+// #genai: A soft divider, for the places a card holds several rows.
 //
-// Almost every place a generic UI would reach for a bordered card, this design uses a rule instead.
-// A rule separates two things without implying either is contained, which keeps lists reading as
-// one continuous document rather than a stack of tiles.
+// Inside a `Surface`, rows are separated by one of these rather than by wrapping each row in its own
+// card — a list of tiles inside a tile reads as noise. Inset it past the leading icon so it looks
+// like it belongs to the row text, not the card edge.
 //
-// `weight="strong"` is for the rule that closes a section; the default is for rows inside one.
+// `weight="strong"` is for closing off a section; the default is for rows inside one.
 import { StyleSheet, View } from 'react-native';
 
 import { useTheme } from '@/providers/ThemeProvider';
@@ -19,7 +19,7 @@ export function Rule({ weight = 'hair', inset = 0, style }) {
       importantForAccessibility="no-hide-descendants"
       style={[
         {
-          height: weight === 'strong' ? 1 : StyleSheet.hairlineWidth,
+          height: StyleSheet.hairlineWidth * (weight === 'strong' ? 2 : 1),
           backgroundColor: weight === 'strong' ? theme.colors.borderStrong : theme.colors.border,
           marginLeft: inset,
         },

@@ -1,24 +1,36 @@
-// #genai: The user's active wallet — list and soft-remove the cards they hold.
+// #genai: The user's active wallet — a stack of their cards, and a list to manage them.
 //
-// There is no "Add a card" button on this screen once the nest has anything in it: adding lives in
-// its own tab, one tap away, and a second route to the same place would just compete with the tab
-// bar. The empty state is the exception, because a nest with nothing in it has exactly one useful
-// next action.
+// The screen is the reference's "Cards" screen: a header with a glass "+" lens, the cards stacked
+// up top (the selected one in front), and a labelled list of soft cards below. Adding a card is a
+// header action (and its own tab) once the nest has anything in it; the empty state is the
+// exception, because a nest with nothing in it has exactly one useful next action.
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, RefreshControl, StyleSheet, Text, View } from 'react-native';
 
+import { TOOL_ROW_TILE } from '@/components/actions/ToolRow';
+import { IconButton } from '@/components/actions/IconButton';
 import { PrimaryButton } from '@/components/actions/PrimaryButton';
+import { CardArt } from '@/components/brand/CardArt';
 import { FormBanner } from '@/components/forms/FormBanner';
 import { PlusIcon } from '@/components/icons';
 import { AppScreen } from '@/components/layout/AppScreen';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
+import { SectionLabel } from '@/components/layout/SectionLabel';
 import { Reveal } from '@/components/motion/Reveal';
+import { Rule } from '@/components/surfaces/Rule';
+import { Surface } from '@/components/surfaces/Surface';
+import { CardFinderPrompt } from '@/features/card-finder/components/CardFinderPrompt';
+import { CardFinderRow } from '@/features/card-finder/components/CardFinderRow';
+import { CreditHealthRow } from '@/features/credit-health/components/CreditHealthRow';
+import { PointsBankRow } from '@/features/points-bank/components/PointsBankRow';
+import { WalletToolsCard } from '@/features/wallet/components/WalletToolsCard';
 import { useTheme } from '@/providers/ThemeProvider';
 import { useAuthStore } from '@/store/authStore';
 import { stagger } from '@/theme/motion';
 
 import { NestCardRow } from '../components/NestCardRow';
+import { WalletStack } from '../components/WalletStack';
 import { useMyCards, useRemoveCard } from '../hooks/useNest';
 
 export function CardNestScreen() {
@@ -29,11 +41,20 @@ export function CardNestScreen() {
   const nest = useMyCards();
   const remove = useRemoveCard();
   const [confirmingId, setConfirmingId] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
   const [banner, setBanner] = useState(null);
 
   const cards = nest.data?.cards ?? [];
   const empty = nest.isSuccess && cards.length === 0;
   const firstName = profile?.fullName?.split(' ')[0];
+
+  // The selection survives a removal gracefully: if the chosen card is gone, fall back to the first.
+  const activeId = cards.some((card) => card.userCardId === selectedId)
+    ? selectedId
+    : cards[0]?.userCardId;
+
+  const openDetails = (card) =>
+    router.push({ pathname: '/card-details', params: { userCardId: card.userCardId } });
 
   const confirmRemove = (card) => {
     setBanner(null);
@@ -58,18 +79,19 @@ export function CardNestScreen() {
       }
     >
       <ScreenHeader
-        // The count rides in the eyebrow rather than getting its own metric block — it is a fact
-        // about the list, not a headline.
-        eyebrow={
-          cards.length
-            ? `Wallet · ${cards.length} ${cards.length === 1 ? 'card' : 'cards'}`
-            : 'Wallet'
-        }
+        eyebrow="Wallet"
         title="Card Nest"
         description={
           firstName
             ? `${firstName}, this is the set Card Buddy scores against. Keep it honest and the advice stays accurate.`
             : 'The cards you actually hold. Card Buddy scores every recommendation against this list.'
+        }
+        trailing={
+          <IconButton
+            accessibilityLabel="Add a card"
+            icon={PlusIcon}
+            onPress={() => router.push('/add-card')}
+          />
         }
       />
 
@@ -84,17 +106,26 @@ export function CardNestScreen() {
 
       {empty ? (
         <Reveal delay={stagger(4)}>
-          <View style={{ gap: theme.spacing.xl, paddingTop: theme.spacing.sm }}>
-            <View style={{ gap: theme.spacing.md }}>
+          <Surface tone="raised" contentStyle={{ gap: theme.spacing.xl, alignItems: 'stretch' }}>
+            <View style={styles.sample}>
+              <View style={styles.sampleCard}>
+                <CardArt
+                  width={188}
+                  tone="blue"
+                  monogram="+"
+                  network="YOUR CARD"
+                  title="Nothing in the nest yet"
+                />
+              </View>
+            </View>
+
+            <View style={{ gap: theme.spacing.sm }}>
               <Text style={[theme.textStyles.heading, { color: theme.colors.text }]}>
-                Nothing in the nest yet
+                Add the cards in your wallet
               </Text>
-              <Text
-                style={[theme.textStyles.body, styles.prose, { color: theme.colors.textMuted }]}
-              >
-                Add the cards already in your wallet. Card Buddy only ever recommends from this
-                list, so a card you leave out is a card it will never suggest — and one you add by
-                mistake will skew every comparison.
+              <Text style={[theme.textStyles.body, { color: theme.colors.textMuted }]}>
+                Card Buddy only ever recommends from this list, so a card you leave out is a card it
+                will never suggest — and one you add by mistake will skew every comparison.
               </Text>
             </View>
 
@@ -103,29 +134,66 @@ export function CardNestScreen() {
               icon={PlusIcon}
               onPress={() => router.push('/add-card')}
             />
-          </View>
+          </Surface>
+        </Reveal>
+      ) : null}
+
+      {empty ? (
+        <Reveal delay={stagger(5)}>
+          <CardFinderPrompt />
         </Reveal>
       ) : null}
 
       {cards.length ? (
-        <View>
-          {cards.map((card, index) => (
-            <NestCardRow
-              key={card.userCardId}
-              card={card}
-              index={index}
-              isLast={index === cards.length - 1}
-              confirming={confirmingId === card.userCardId}
-              removing={remove.isPending && remove.variables === card.userCardId}
-              onAskRemove={() => {
-                setBanner(null);
-                setConfirmingId(card.userCardId);
-              }}
-              onCancel={() => setConfirmingId(null)}
-              onConfirm={() => confirmRemove(card)}
+        <>
+          <Reveal delay={stagger(3)}>
+            <WalletStack
+              cards={cards}
+              selectedId={activeId}
+              onSelect={(card) => setSelectedId(card.userCardId)}
+              onOpen={openDetails}
             />
-          ))}
-        </View>
+          </Reveal>
+
+          <Reveal delay={stagger(4)} style={{ gap: theme.spacing.md }}>
+            <SectionLabel label="Wallet tools" />
+            <WalletToolsCard>{({ auditDone }) => <CardFinderRow auditDone={auditDone} />}</WalletToolsCard>
+          </Reveal>
+
+          <Reveal delay={stagger(4)} style={{ gap: theme.spacing.md }}>
+            <SectionLabel label="Credit & rewards" />
+            <Surface padded={false}>
+              <CreditHealthRow />
+              <Rule inset={theme.spacing.lg + TOOL_ROW_TILE + theme.spacing.md} />
+              <PointsBankRow />
+            </Surface>
+          </Reveal>
+
+          <View style={{ gap: theme.spacing.md }}>
+            <SectionLabel label="Your cards" count={cards.length} />
+
+            <View style={{ gap: theme.spacing.md }}>
+              {cards.map((card, index) => (
+                <NestCardRow
+                  key={card.userCardId}
+                  card={card}
+                  index={index}
+                  selected={card.userCardId === activeId}
+                  confirming={confirmingId === card.userCardId}
+                  removing={remove.isPending && remove.variables === card.userCardId}
+                  onSelect={() => setSelectedId(card.userCardId)}
+                  onDetails={() => openDetails(card)}
+                  onAskRemove={() => {
+                    setBanner(null);
+                    setConfirmingId(card.userCardId);
+                  }}
+                  onCancel={() => setConfirmingId(null)}
+                  onConfirm={() => confirmRemove(card)}
+                />
+              ))}
+            </View>
+          </View>
+        </>
       ) : null}
     </AppScreen>
   );
@@ -136,7 +204,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  prose: {
-    maxWidth: 460,
+  sample: {
+    alignItems: 'center',
+    paddingTop: 8,
+  },
+  sampleCard: {
+    transform: [{ rotate: '-4deg' }],
+    opacity: 0.95,
   },
 });

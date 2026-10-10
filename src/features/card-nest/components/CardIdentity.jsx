@@ -1,9 +1,8 @@
 // #genai: How a card names itself, everywhere it appears.
 //
-// The previous version put the bank and network in rounded pill badges. Pills are the default
-// decoration of generated UI and they made every row shout at the same volume. A statement sets the
-// issuer as a small tracked caps line above the item and lets the name itself be the loud part —
-// which is also the correct hierarchy, since the user is scanning for the card, not the bank.
+// The issuer rides above the name as a small tracked-caps line (with the network after a mid-dot),
+// and the card's own name is the loud part — which is the correct hierarchy, since the user is
+// scanning for the card, not the bank.
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useTheme } from '@/providers/ThemeProvider';
@@ -16,7 +15,7 @@ export function CardIdentity({ bank, cardName, network }) {
       <View style={[styles.meta, { gap: theme.spacing.sm }]}>
         <Text
           numberOfLines={1}
-          style={[theme.textStyles.micro, styles.bank, { color: theme.colors.textMuted }]}
+          style={[theme.textStyles.micro, styles.bank, { color: theme.colors.primary }]}
         >
           {bank}
         </Text>
@@ -25,7 +24,7 @@ export function CardIdentity({ bank, cardName, network }) {
           <>
             {/* A mid-dot rather than another badge: it separates without adding a second shape. */}
             <Text style={[theme.textStyles.micro, { color: theme.colors.textFaint }]}>·</Text>
-            <Text style={[theme.textStyles.micro, { color: theme.colors.textFaint }]}>
+            <Text style={[theme.textStyles.micro, { color: theme.colors.textMuted }]}>
               {network}
             </Text>
           </>

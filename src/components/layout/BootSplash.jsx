@@ -5,19 +5,19 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { BrandMark } from '@/components/brand/BrandMark';
-import { PaperBackground } from '@/components/surfaces/PaperBackground';
+import { AmbientBackground } from '@/components/surfaces/AmbientBackground';
 import { useTheme } from '@/providers/ThemeProvider';
 
 export function BootSplash() {
   const theme = useTheme();
 
   return (
-    <PaperBackground>
+    <AmbientBackground>
       <View style={[styles.center, { gap: theme.spacing.xxl }]}>
-        <BrandMark size={56} />
-        <ActivityIndicator color={theme.colors.textFaint} />
+        <BrandMark size={60} />
+        <ActivityIndicator color={theme.colors.primary} />
       </View>
-    </PaperBackground>
+    </AmbientBackground>
   );
 }
 

@@ -1,10 +1,11 @@
 // #genai: Hand-rolled SVG icons — a handful of 24px glyphs, drawn on a shared grid so stroke
 // weight and optical size stay consistent without pulling in an icon library.
-import Svg, { Circle, Line, Path, Polyline, Rect } from 'react-native-svg';
+import Svg, { Circle, Ellipse, Line, Path, Polyline, Rect } from 'react-native-svg';
 
-// A 1.5 stroke rather than the usual 1.8: at this weight the glyphs sit at the same optical
-// density as the hairline rules they share a screen with, instead of shouting over them.
-function Glyph({ size = 20, color = 'currentColor', strokeWidth = 1.5, children }) {
+// A 1.8 stroke with round caps and joins: heavy enough to sit comfortably beside Manrope's
+// semibold labels and to survive on a translucent glass ground, soft enough to match the
+// generously rounded surfaces they live on.
+function Glyph({ size = 20, color = 'currentColor', strokeWidth = 1.8, children }) {
   return (
     <Svg
       width={size}
@@ -214,6 +215,67 @@ export function DeviceIcon(props) {
   );
 }
 
+export function ArrowRightIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Line x1="5" y1="12" x2="19" y2="12" />
+      <Polyline points="13 6 19 12 13 18" />
+    </Glyph>
+  );
+}
+
+export function ArrowUpIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Line x1="12" y1="19" x2="12" y2="5" />
+      <Polyline points="6 11 12 5 18 11" />
+    </Glyph>
+  );
+}
+
+/** Ask — a four-point sparkle. */
+export function SparkleIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Path d="M12 3.5c.7 4.4 2.6 6.3 7 7-4.4.7-6.3 2.6-7 7-.7-4.4-2.6-6.3-7-7 4.4-.7 6.3-2.6 7-7Z" />
+      <Path d="M19 3v3M20.5 4.5h-3" />
+    </Glyph>
+  );
+}
+
+/** Tracking — a pulse line. */
+export function ActivityIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Polyline points="3 12 7.5 12 10 5.5 14 18.5 16.5 12 21 12" />
+    </Glyph>
+  );
+}
+
+/** Audit — a clipboard with a tick and two lines. */
+export function AuditIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Rect x="5" y="4.5" width="14" height="16.5" rx="2.5" />
+      <Path d="M9 4.5V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v.5" />
+      <Polyline points="8.8 11.5 10.6 13.3 14.2 9.7" />
+      <Line x1="9" y1="17" x2="15" y2="17" />
+    </Glyph>
+  );
+}
+
+/** Categorisation — four tiles. */
+export function GridIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Rect x="4" y="4" width="7" height="7" rx="2" />
+      <Rect x="13" y="4" width="7" height="7" rx="2" />
+      <Rect x="4" y="13" width="7" height="7" rx="2" />
+      <Rect x="13" y="13" width="7" height="7" rx="2" />
+    </Glyph>
+  );
+}
+
 export function GoogleIcon({ size = 20 }) {
   // Brand mark keeps its official colours, so it does not take the monochrome stroke treatment.
   return (
@@ -246,5 +308,26 @@ export function AppleIcon({ size = 20, color = '#000000' }) {
         d="M16.7 12.7c0-2.5 2-3.7 2.1-3.8-1.2-1.7-3-1.9-3.6-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.3-.9-1.7 0-3.3 1-4.1 2.5-1.8 3.1-.5 7.6 1.2 10.1.8 1.2 1.8 2.6 3.1 2.5 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.5.9-1.4 1.3-2.8 1.3-2.9-.1 0-2.5-1-2.5-3.9ZM14.2 4.4c.7-.8 1.1-2 1-3.2-1 0-2.3.7-3 1.5-.7.7-1.2 1.9-1 3 1.1.1 2.3-.5 3-1.3Z"
       />
     </Svg>
+  );
+}
+
+/** Credit health — a shield with a tick. */
+export function ShieldIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Path d="M12 3 5 5.8v5.4c0 4.4 2.9 8.2 7 9.8 4.1-1.6 7-5.4 7-9.8V5.8L12 3Z" />
+      <Polyline points="8.8 12 11 14.2 15.4 9.8" />
+    </Glyph>
+  );
+}
+
+/** Points bank — a stack of coins. */
+export function CoinsIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Ellipse cx="12" cy="6.5" rx="7" ry="3" />
+      <Path d="M5 6.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
+      <Path d="M5 11.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
+    </Glyph>
   );
 }

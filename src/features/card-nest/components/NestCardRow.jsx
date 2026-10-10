@@ -1,10 +1,9 @@
-// #genai: One active card in the nest, with a two-step remove.
+// #genai: One active card in the nest — a soft card with a card-art thumbnail and a two-step remove.
 //
-// A ruled row, not a card. Wrapping each card in its own bordered panel made the nest read as a
-// stack of unrelated tiles; a rule between rows makes it read as one list — which is what it is.
-//
-// The leading numeral, set in the Didone, is the detail that ties the screen to its printed-statement
-// idea. It also does real work: it tells the user how many cards they hold without a counter.
+// Each card gets its own raised surface (the list is "a stack of soft cards", not a ruled
+// statement). The thumbnail is the same generated art as the wallet stack above, so the row and the
+// stack visibly refer to the same object; tapping the row selects it, which brings it to the front
+// of that stack. The selected row is tinted so the link between the two is never in doubt.
 //
 // Remove is deliberately two steps and deliberately inline. A modal for a destructive action this
 // small is heavier than the action, and the confirmation belongs next to the thing it will delete so
@@ -13,56 +12,55 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { SecondaryButton } from '@/components/actions/SecondaryButton';
 import { TextLink } from '@/components/actions/TextLink';
+import { CardArt } from '@/components/brand/CardArt';
+import { ChevronRightIcon } from '@/components/icons';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { Reveal } from '@/components/motion/Reveal';
-import { Rule } from '@/components/surfaces/Rule';
+import { Surface } from '@/components/surfaces/Surface';
 import { useTheme } from '@/providers/ThemeProvider';
 import { stagger } from '@/theme/motion';
 
 import { CardIdentity } from './CardIdentity';
 
+const THUMB_WIDTH = 76;
+
 export function NestCardRow({
   card,
   index,
-  isLast,
+  selected,
   confirming,
   removing,
+  onSelect,
   onAskRemove,
   onCancel,
   onConfirm,
+  onDetails,
 }) {
   const theme = useTheme();
 
   return (
     <Reveal delay={stagger(Math.min(index, 6), 40)}>
-      <View style={{ paddingVertical: theme.spacing.lg, gap: theme.spacing.md }}>
-        <View style={[styles.row, { gap: theme.spacing.lg }]}>
-          <Text
-            style={[
-              theme.textStyles.title,
-              styles.numeral,
-              { color: theme.colors.textFaint, fontFamily: theme.fonts.display.regular },
-            ]}
-          >
-            {String(index + 1).padStart(2, '0')}
-          </Text>
-
+      <Surface
+        tone={selected ? 'tinted' : 'raised'}
+        radius={theme.radius.xl}
+        shadow={selected ? 'sm' : 'md'}
+        contentStyle={{ padding: theme.spacing.md, gap: theme.spacing.md }}
+      >
+        <PressableScale
+          accessibilityLabel={`${card.cardName}, ${card.bank}`}
+          accessibilityState={{ selected }}
+          haptic="selection"
+          onPress={onSelect}
+          scaleTo={0.985}
+          hitSlop={0}
+          style={[styles.row, { gap: theme.spacing.md }]}
+        >
+          <CardArt width={THUMB_WIDTH} bank={card.bank} />
           <CardIdentity bank={card.bank} cardName={card.cardName} network={card.network} />
+        </PressableScale>
 
-          {!confirming ? (
-            <TextLink
-              label="Remove"
-              tone="muted"
-              align="start"
-              underline={false}
-              onPress={onAskRemove}
-              style={styles.removeLink}
-            />
-          ) : null}
-        </View>
-
-        {/* Indented to the identity column so the confirmation clearly belongs to this row. */}
         {confirming ? (
-          <View style={{ gap: theme.spacing.md, marginLeft: NUMERAL_WIDTH + theme.spacing.lg }}>
+          <View style={{ gap: theme.spacing.md }}>
             <Text style={[theme.textStyles.caption, { color: theme.colors.textMuted }]}>
               Removing this only takes it out of your nest. You can add it back at any time.
             </Text>
@@ -83,28 +81,64 @@ export function NestCardRow({
               />
             </View>
           </View>
-        ) : null}
-      </View>
+        ) : (
+          <View style={[styles.actions, { gap: theme.spacing.sm }]}>
+            <PressableScale
+              accessibilityLabel={`Transactions and details for ${card.cardName}`}
+              haptic="selection"
+              onPress={onDetails}
+              scaleTo={0.97}
+              hitSlop={0}
+              style={[
+                styles.detailsPill,
+                {
+                  backgroundColor: theme.materials.inset.background,
+                  borderRadius: theme.radius.full,
+                  paddingHorizontal: theme.spacing.md,
+                  gap: theme.spacing.xs,
+                },
+              ]}
+            >
+              <Text
+                numberOfLines={1}
+                style={[
+                  theme.textStyles.label,
+                  styles.detailsLabel,
+                  { color: theme.colors.primary, fontFamily: theme.fonts.text.semibold },
+                ]}
+              >
+                Transactions & details
+              </Text>
+              <ChevronRightIcon size={14} color={theme.colors.primary} />
+            </PressableScale>
 
-      {!isLast ? <Rule /> : null}
+            <TextLink label="Remove" tone="muted" align="start" onPress={onAskRemove} />
+          </View>
+        )}
+      </Surface>
     </Reveal>
   );
 }
-
-const NUMERAL_WIDTH = 30;
 
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  numeral: {
-    width: NUMERAL_WIDTH,
-    // Locked to a fixed width and tabular figures so the identity column never shifts between rows.
-    fontVariant: ['tabular-nums'],
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  removeLink: {
-    alignSelf: 'center',
+  detailsPill: {
+    flex: 1,
+    height: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  detailsLabel: {
+    flexShrink: 1,
   },
   confirmRow: {
     flexDirection: 'row',

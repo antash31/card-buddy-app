@@ -1,28 +1,30 @@
-// #genai: The bottom navigation bar.
+// #genai: The bottom navigation — a floating glass capsule with a lens under the active tab.
 //
-// This is the one surface in the product allowed to be translucent, and it earns it: content
-// genuinely scrolls beneath it, so a blurred backdrop communicates depth that a solid fill would
-// hide. Reduce-transparency (and Android, where a real blur is expensive) gets the opaque fill.
+// The capsule is inset from the screen edges and hovers above the home indicator rather than being
+// glued to the bottom. Content genuinely scrolls beneath it, so the blur has something real to
+// work on; reduce-transparency (and Android, where live blur is costly) get an opaque capsule via
+// `Glass`.
 //
-// The active marker is a short pine bar sitting *on* the top hairline, like the raised tab of a
-// file divider — the aesthetic conceit of the whole app, at 2pt. Each tab owns its own marker and
-// springs it in, rather than one shared indicator sliding between measured positions: a per-tab
-// spring is interruptible, needs no layout measurement, and cannot desync from the route.
+// The active tab is marked by a *lens*: a single tinted pill that springs sideways to sit behind
+// whichever tab is current. One shared lens (rather than a marker per tab) is what makes the bar
+// feel like one liquid object; it is driven by a spring on the UI thread so it can be re-aimed
+// mid-flight, and it takes its geometry from one `onLayout` measurement, so it cannot desync from
+// the real item widths on any device.
 //
 // Labels are always visible. Icon-only navigation asks the user to learn a legend, and this audience
-// opens the app at a payment counter, not at leisure.
-import { BlurView } from 'expo-blur';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useDerivedValue,
-  withSpring,
-  withTiming,
-} from 'react-native-reanimated';
+// opens the app at a payment counter, not at leisure. Selection is carried by the lens, the accent
+// colour AND a heavier label, so it never depends on colour alone.
+//
+// Secondary routes that are not tabs (Ask, Tracking, Card details, Wallet audit, CIBIL Protector, Points bank…) keep their parent tab lit, so
+// the user always has an answer to "where am I?".
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { NestIcon, PlusIcon, SwipeMaxIcon, UserIcon } from '@/components/icons';
-import { useReduceMotion, useReduceTransparency } from '@/hooks/useMotionPreferences';
+import { Glass } from '@/components/surfaces/Glass';
+import { useReduceMotion } from '@/hooks/useMotionPreferences';
 import { fireHaptic } from '@/lib/haptics';
 import { useTheme } from '@/providers/ThemeProvider';
 import { springs, timings } from '@/theme/motion';
@@ -35,27 +37,25 @@ const TABS = {
   profile: { label: 'Profile', Icon: UserIcon },
 };
 
+// Non-tab routes and the tab they live under.
+const PARENT_TAB = {
+  chat: 'swipemax',
+  tracking: 'profile',
+  'transaction-review': 'profile',
+  'card-details': 'index',
+  'wallet-audit': 'index',
+  'wallet-categories': 'index',
+  'credit-health': 'index',
+  'points-bank': 'index',
+  'card-finder': 'index',
+};
+
+const INNER_PADDING = 6;
+
 function TabItem({ config, focused, onPress, onLongPress, accessibilityLabel }) {
   const theme = useTheme();
-  const reduceMotion = useReduceMotion();
-
-  const progress = useDerivedValue(
-    () =>
-      reduceMotion
-        ? withTiming(focused ? 1 : 0, { duration: timings.fast })
-        : withSpring(focused ? 1 : 0, springs.snappy),
-    [focused, reduceMotion],
-  );
-
-  const markerStyle = useAnimatedStyle(() => ({
-    opacity: progress.value,
-    // Scaling from the centre makes the marker read as being drawn outward from the tab, which is
-    // cheaper than animating width and never triggers layout.
-    transform: [{ scaleX: reduceMotion ? 1 : 0.4 + progress.value * 0.6 }],
-  }));
-
   const { Icon, label } = config;
-  const color = focused ? theme.colors.primary : theme.colors.textFaint;
+  const color = focused ? theme.colors.primary : theme.colors.textMuted;
 
   return (
     <Pressable
@@ -70,18 +70,19 @@ function TabItem({ config, focused, onPress, onLongPress, accessibilityLabel }) 
       onLongPress={onLongPress}
       style={styles.item}
     >
-      <Animated.View
-        style={[
-          styles.marker,
-          { backgroundColor: theme.colors.primary, borderRadius: theme.radius.xs },
-          markerStyle,
-        ]}
-        pointerEvents="none"
-      />
-
-      <View style={[styles.itemContent, { gap: theme.spacing.xs }]}>
-        <Icon size={21} color={color} />
-        <Text style={[theme.textStyles.micro, { color }]}>{label}</Text>
+      <View style={[styles.itemContent, { gap: 3 }]}>
+        <Icon size={22} color={color} strokeWidth={focused ? 2.1 : 1.8} />
+        <Text
+          style={[
+            styles.label,
+            {
+              color,
+              fontFamily: focused ? theme.fonts.text.semibold : theme.fonts.text.medium,
+            },
+          ]}
+        >
+          {label}
+        </Text>
       </View>
     </Pressable>
   );
@@ -90,87 +91,126 @@ function TabItem({ config, focused, onPress, onLongPress, accessibilityLabel }) 
 export function TabBar({ state, descriptors, navigation }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const reduceTransparency = useReduceTransparency();
+  const reduceMotion = useReduceMotion();
 
-  const { chrome } = theme.materials;
-  const solid = reduceTransparency || Platform.OS === 'android';
+  const visible = state.routes.filter((route) => TABS[route.name]);
+  const focusedRoute = state.routes[state.index];
+  const focusedName = TABS[focusedRoute?.name] ? focusedRoute.name : PARENT_TAB[focusedRoute?.name];
+  const activeIndex = visible.findIndex((route) => route.name === focusedName);
+
+  const [innerWidth, setInnerWidth] = useState(0);
+  const itemWidth = visible.length ? innerWidth / visible.length : 0;
+
+  const lensX = useSharedValue(0);
+  const lensOpacity = useSharedValue(0);
+  const placed = useRef(false);
+
+  useEffect(() => {
+    if (!itemWidth) return;
+    const target = Math.max(activeIndex, 0) * itemWidth;
+
+    if (!placed.current) {
+      // First measurement: put the lens in place without sliding in from the left edge.
+      lensX.value = target;
+      placed.current = true;
+    } else {
+      lensX.value = reduceMotion
+        ? withTiming(target, { duration: timings.fast })
+        : withSpring(target, springs.liquid);
+    }
+
+    lensOpacity.value = withTiming(activeIndex >= 0 ? 1 : 0, { duration: timings.base });
+  }, [activeIndex, itemWidth, lensOpacity, lensX, reduceMotion]);
+
+  const lensStyle = useAnimatedStyle(() => ({
+    opacity: lensOpacity.value,
+    transform: [{ translateX: lensX.value }],
+  }));
+
+  const barBottom = Math.max(insets.bottom - 6, theme.metrics.tabBarGap);
 
   return (
     <View
-      style={[
-        styles.bar,
-        {
-          height: theme.metrics.tabBarHeight + insets.bottom,
-          paddingBottom: insets.bottom,
-          backgroundColor: solid ? chrome.opaque : chrome.background,
-        },
-        theme.materials.elevated,
-      ]}
+      pointerEvents="box-none"
+      style={[styles.wrap, { left: theme.metrics.gutter, right: theme.metrics.gutter, bottom: barBottom }]}
     >
-      {!solid && (
-        <BlurView
-          intensity={chrome.intensity}
-          tint={chrome.tint}
-          style={StyleSheet.absoluteFill}
-          pointerEvents="none"
-        />
-      )}
-
-      {/* The rule the active marker sits on. */}
-      <View style={[styles.topRule, { backgroundColor: chrome.rule }]} pointerEvents="none" />
-
-      <View style={styles.row}>
-        {state.routes.map((route, index) => {
-          const config = TABS[route.name];
-          if (!config) return null;
-
-          const { options } = descriptors[route.key];
-          const focused = state.index === index;
-
-          return (
-            <TabItem
-              key={route.key}
-              config={config}
-              focused={focused}
-              accessibilityLabel={options.tabBarAccessibilityLabel ?? config.label}
-              onPress={() => {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-
-                if (!focused && !event.defaultPrevented) {
-                  navigation.navigate(route.name);
-                }
-              }}
-              onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+      <Glass
+        variant="thick"
+        radius={theme.metrics.tabBarHeight / 2}
+        shadow="lg"
+        style={{ height: theme.metrics.tabBarHeight }}
+        contentStyle={styles.fill}
+      >
+        <View
+          style={[styles.row, { padding: INNER_PADDING }]}
+          onLayout={(event) => setInnerWidth(event.nativeEvent.layout.width - INNER_PADDING * 2)}
+        >
+          {itemWidth > 0 && (
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                styles.lens,
+                {
+                  left: INNER_PADDING,
+                  top: INNER_PADDING,
+                  bottom: INNER_PADDING,
+                  width: itemWidth,
+                  borderRadius: theme.metrics.tabBarHeight / 2 - INNER_PADDING,
+                  backgroundColor: theme.colors.primarySubtle,
+                  borderColor: theme.colors.primaryEdge,
+                },
+                lensStyle,
+              ]}
             />
-          );
-        })}
-      </View>
+          )}
+
+          {visible.map((route) => {
+            const config = TABS[route.name];
+            const { options } = descriptors[route.key];
+            const focused = route.name === focusedName;
+
+            return (
+              <TabItem
+                key={route.key}
+                config={config}
+                focused={focused}
+                accessibilityLabel={options.tabBarAccessibilityLabel ?? config.label}
+                onPress={() => {
+                  const event = navigation.emit({
+                    type: 'tabPress',
+                    target: route.key,
+                    canPreventDefault: true,
+                  });
+
+                  if (!event.defaultPrevented) {
+                    // Tapping the parent tab from one of its sub-screens must still navigate.
+                    if (!focused || route.key !== focusedRoute?.key) navigation.navigate(route.name);
+                  }
+                }}
+                onLongPress={() => navigation.emit({ type: 'tabLongPress', target: route.key })}
+              />
+            );
+          })}
+        </View>
+      </Glass>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  bar: {
+  wrap: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    overflow: 'hidden',
   },
-  topRule: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: StyleSheet.hairlineWidth,
+  fill: {
+    flex: 1,
   },
   row: {
     flex: 1,
     flexDirection: 'row',
+  },
+  lens: {
+    position: 'absolute',
+    borderWidth: StyleSheet.hairlineWidth * 2,
   },
   item: {
     flex: 1,
@@ -180,10 +220,9 @@ const styles = StyleSheet.create({
   itemContent: {
     alignItems: 'center',
   },
-  marker: {
-    position: 'absolute',
-    top: 0,
-    width: 30,
-    height: 2,
+  label: {
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.1,
   },
 });

@@ -21,6 +21,12 @@ export const springs = {
   drawer: { dampingRatio: 0.8, duration: 300 },
   /** Only for motion the user threw or flicked. */
   momentum: { dampingRatio: 0.8, duration: 400 },
+  /**
+   * The glass lens sliding under the active tab, and the wallet stack re-ordering. A touch of
+   * overshoot is earned here: the user's tap is the momentum, and a liquid surface settles rather
+   * than stops.
+   */
+  liquid: { dampingRatio: 0.78, duration: 460 },
 };
 
 /** Fade-only equivalents used when the user asks for reduced motion. */

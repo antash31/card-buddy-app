@@ -19,3 +19,11 @@ export function formatPoints(value) {
   if (!Number.isFinite(points)) return '—';
   return points.toLocaleString('en-IN', { maximumFractionDigits: 0 });
 }
+
+/** Whole rupees, Indian grouping — for annual figures where paise are noise (Rs.1,02,600). */
+export function formatRupeesWhole(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return '—';
+  const magnitude = Math.round(Math.abs(amount)).toLocaleString('en-IN');
+  return `${amount < 0 ? '−' : ''}Rs.${magnitude}`;
+}

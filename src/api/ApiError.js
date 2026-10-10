@@ -15,4 +15,13 @@ export class ApiError extends Error {
   get isUnauthorized() {
     return this.status === 401;
   }
+
+  /**
+   * The request failed for a reason that says nothing about the user's credentials: the server could
+   * not be reached, timed out, was busy, or broke. Signing someone out over this would throw away a
+   * perfectly good session because of a dropped connection.
+   */
+  get isTransient() {
+    return this.status === 0 || this.status === 408 || this.status === 429 || this.status >= 500;
+  }
 }

@@ -3,9 +3,9 @@
 // Used only for feedback that belongs to the whole form. Anything about a single field is shown
 // beneath that field instead, where the user is already looking.
 //
-// The tone is carried by a background tint and a full hairline border — deliberately not by a thick
-// coloured stripe down one edge, which is the most overused "design touch" in this category of UI
-// and never looks intentional.
+// A soft tinted card with the status glyph in a small round chip. The tone is carried by the tint
+// and the glyph — not by a thick coloured stripe down one edge, which is the most overused "design
+// touch" in this category of UI and never looks intentional.
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AlertIcon, CheckIcon } from '@/components/icons';
@@ -34,16 +34,17 @@ export function FormBanner({ message, tone = 'error' }) {
         style={[
           styles.banner,
           {
-            borderRadius: theme.radius.sm,
+            borderRadius: theme.radius.md,
             paddingVertical: theme.spacing.md,
-            paddingHorizontal: theme.spacing.lg,
+            paddingHorizontal: theme.spacing.md,
             gap: theme.spacing.md,
             backgroundColor: theme.colors[fill],
-            borderColor: theme.colors[accent],
           },
         ]}
       >
-        <Icon size={16} color={theme.colors[accent]} />
+        <View style={[styles.chip, { backgroundColor: theme.colors[accent] }]}>
+          <Icon size={13} color={theme.colors.textInverted} strokeWidth={2.4} />
+        </View>
         <Text style={[theme.textStyles.label, styles.text, { color: theme.colors.text }]}>
           {message}
         </Text>
@@ -56,9 +57,17 @@ const styles = StyleSheet.create({
   banner: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    borderWidth: StyleSheet.hairlineWidth,
+  },
+  chip: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
   },
   text: {
     flex: 1,
+    paddingTop: 2,
   },
 });

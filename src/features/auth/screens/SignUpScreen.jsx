@@ -149,7 +149,7 @@ export function SignUpScreen() {
           disabled={busy}
         />
 
-        <Text style={[theme.textStyles.caption, { color: theme.colors.textFaint }]}>
+        <Text style={[theme.textStyles.caption, { color: theme.colors.textMuted }]}>
           By creating an account you agree to our Terms of Service and Privacy Policy.
         </Text>
       </Reveal>
@@ -157,7 +157,7 @@ export function SignUpScreen() {
       <Reveal delay={stagger(5)} style={{ gap: theme.spacing.lg }}>
         <View style={[styles.divider, { gap: theme.spacing.md }]}>
           <View style={[styles.rule, { backgroundColor: theme.colors.border }]} />
-          <Text style={[theme.textStyles.micro, { color: theme.colors.textFaint }]}>or</Text>
+          <Text style={[theme.textStyles.micro, { color: theme.colors.textMuted }]}>or</Text>
           <View style={[styles.rule, { backgroundColor: theme.colors.border }]} />
         </View>
 

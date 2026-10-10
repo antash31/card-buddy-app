@@ -1,9 +1,8 @@
-// #genai: The hero graphic on the welcome screen — a fanned stack of credit cards.
+// #genai: The hero graphic on the welcome screen — a stack of bright cards, the front one draggable.
 //
-// Deliberately *not* skeuomorphic. There is no gloss highlight and no gold chip, because a drawn
-// imitation of a plastic card competes with the real cards in the user's hand and loses. These are
-// engraved plates: tonal, matte, inscribed with hairlines, with the numerals set in the Didone. The
-// numbers are ornamental — real card numbers are never stored, let alone displayed.
+// The stacked-cards composition from the reference's "Cards" screen: a sun-yellow card, a graphite
+// card and a blue card in front, each peeking over the one below, the blue one with a pane of
+// frosted glass across its lower third (that is `CardArt`'s band). The numerals are ornamental.
 //
 // The top card is grabbable. Three details make it feel physical rather than scripted:
 //   - It tracks the finger 1:1 while inside a comfortable range, then rubber-bands: resistance
@@ -12,9 +11,8 @@
 //   - Release hands the finger's velocity straight into the spring, so there is no seam between
 //     dragging and animating.
 //   - Because it is a spring, the card can be caught mid-flight and thrown again.
-import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
-import { StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   cancelAnimation,
@@ -31,61 +29,20 @@ import { useReduceMotion } from '@/hooks/useMotionPreferences';
 import { useTheme } from '@/providers/ThemeProvider';
 import { rubberband, springs } from '@/theme/motion';
 
-const CARD_WIDTH = 268;
-const CARD_HEIGHT = 168;
+import { CardArt } from './CardArt';
 
-function CardFace({ colors, label, digits }) {
-  const theme = useTheme();
-  const { plateRule, onPlate } = theme.materials;
+const CARD_WIDTH = 276;
+const CARD_HEIGHT = Math.round(CARD_WIDTH * 0.63);
+const CARD_RADIUS = Math.round(CARD_WIDTH * 0.1);
 
-  return (
-    <LinearGradient
-      colors={colors}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={[styles.card, { borderRadius: theme.radius.xl }, theme.materials.elevated]}
-    >
-      {/* The lip of the plate catching light — one hairline, not a sheen across the whole face. */}
-      <View style={[styles.topEdge, { backgroundColor: plateRule }]} pointerEvents="none" />
+// Back to front. `lift` is how far each card rises above the one in front of it.
+const LAYERS = [
+  { tone: 'sun', monogram: 'RP', network: 'RUPAY', title: '6521  ····  ····  0417', lift: 52, rotate: 3, scale: 0.86 },
+  { tone: 'graphite', monogram: 'MC', network: 'MASTERCARD', title: '5390  ····  ····  1148', lift: 26, rotate: -3, scale: 0.93 },
+];
 
-      <View style={styles.cardTop}>
-        <View style={[styles.chip, { borderColor: plateRule, borderRadius: theme.radius.xs }]}>
-          <View style={[styles.chipLine, { backgroundColor: plateRule }]} />
-          <View style={[styles.chipLine, { backgroundColor: plateRule }]} />
-        </View>
-
-        <Text style={[theme.textStyles.micro, { color: onPlate, opacity: 0.72 }]}>{label}</Text>
-      </View>
-
-      <View style={styles.digitsRow}>
-        {digits.map((group, index) => (
-          <Text
-            key={index}
-            style={[
-              styles.digitGroup,
-              {
-                color: onPlate,
-                fontFamily: theme.fonts.display.medium,
-                opacity: 0.88,
-              },
-            ]}
-          >
-            {group}
-          </Text>
-        ))}
-      </View>
-    </LinearGradient>
-  );
-}
-
-function FloatingCard({ index, colors, label, digits, reduceMotion }) {
+function FloatingCard({ index, layer, reduceMotion }) {
   const float = useSharedValue(0);
-
-  // Fanned symmetrically around the front card so both back cards show a corner, rather than one
-  // sitting directly behind and reading as a flat slab.
-  const restingRotation = index === 1 ? -9 : 9;
-  const restingOffsetY = index * -9;
-  const restingScale = 1 - index * 0.04;
 
   useEffect(() => {
     if (reduceMotion) {
@@ -95,7 +52,7 @@ function FloatingCard({ index, colors, label, digits, reduceMotion }) {
     }
 
     float.value = withRepeat(
-      withTiming(1, { duration: 4200 + index * 700, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1, { duration: 4200 + index * 800, easing: Easing.inOut(Easing.sin) }),
       -1,
       true,
     );
@@ -106,18 +63,23 @@ function FloatingCard({ index, colors, label, digits, reduceMotion }) {
   const animatedStyle = useAnimatedStyle(
     () => ({
       transform: [
-        { translateY: restingOffsetY + float.value * -6 },
-        { rotate: `${restingRotation}deg` },
-        { scale: restingScale },
+        { translateY: -layer.lift + float.value * -5 },
+        { rotate: `${layer.rotate}deg` },
+        { scale: layer.scale },
       ],
-      opacity: 1 - index * 0.18,
     }),
-    [index, restingOffsetY, restingRotation, restingScale],
+    [layer],
   );
 
   return (
     <Animated.View style={[styles.layer, animatedStyle]} pointerEvents="none">
-      <CardFace colors={colors} label={label} digits={digits} />
+      <CardArt
+        width={CARD_WIDTH}
+        tone={layer.tone}
+        monogram={layer.monogram}
+        network={layer.network}
+        title={layer.title}
+      />
     </Animated.View>
   );
 }
@@ -129,8 +91,6 @@ export function CardStack() {
 
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
-
-  const plates = theme.materials.plates;
 
   const pan = Gesture.Pan()
     // A few pixels of hysteresis stops an intended tap from registering as a drag.
@@ -152,21 +112,14 @@ export function CardStack() {
       { translateX: translateX.value },
       { translateY: translateY.value },
       // Tilting into the drag telegraphs the direction of travel.
-      { rotate: `${interpolate(translateX.value, [-160, 160], [-10, 10])}deg` },
+      { rotate: `${interpolate(translateX.value, [-160, 160], [-9, 9])}deg` },
     ],
   }));
 
   return (
     <View style={styles.root} pointerEvents="box-none">
-      {[2, 1].map((index) => (
-        <FloatingCard
-          key={index}
-          index={index}
-          colors={plates[index]}
-          label={index === 2 ? 'Travel' : 'Cashback'}
-          digits={index === 2 ? ['4821', '••••', '••••', '7702'] : ['5390', '••••', '••••', '1148']}
-          reduceMotion={reduceMotion}
-        />
+      {LAYERS.map((layer, index) => (
+        <FloatingCard key={layer.tone} index={index} layer={layer} reduceMotion={reduceMotion} />
       ))}
 
       <GestureDetector gesture={pan}>
@@ -174,9 +127,17 @@ export function CardStack() {
           accessibilityHint="Drag to move the card"
           accessibilityLabel="Card Buddy rewards card"
           accessibilityRole="image"
-          style={[styles.layer, topCardStyle]}
+          // The shadow is cast by this wrapper, so it needs the card's own corner radius — without it
+          // web draws a rectangular shadow behind a rounded card.
+          style={[styles.layer, { borderRadius: CARD_RADIUS }, theme.materials.shadow.lg, topCardStyle]}
         >
-          <CardFace colors={plates[0]} label="Rewards" digits={['9042', '••••', '••••', '3316']} />
+          <CardArt
+            width={CARD_WIDTH}
+            tone="blue"
+            monogram="CB"
+            network="VISA"
+            title="9042  ····  ····  3316"
+          />
         </Animated.View>
       </GestureDetector>
     </View>
@@ -185,50 +146,13 @@ export function CardStack() {
 
 const styles = StyleSheet.create({
   root: {
-    height: CARD_HEIGHT + 72,
+    height: CARD_HEIGHT + 78,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 6,
   },
   layer: {
     position: 'absolute',
-  },
-  card: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    padding: 20,
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-  },
-  topEdge: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: StyleSheet.hairlineWidth,
-  },
-  cardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  chip: {
-    width: 38,
-    height: 28,
-    borderWidth: StyleSheet.hairlineWidth,
-    justifyContent: 'center',
-    gap: 5,
-    paddingHorizontal: 7,
-  },
-  chipLine: {
-    height: StyleSheet.hairlineWidth,
-  },
-  digitsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-  },
-  digitGroup: {
-    fontSize: 17,
-    letterSpacing: 1.5,
+    bottom: 6,
   },
 });

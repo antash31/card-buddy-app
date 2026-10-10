@@ -13,7 +13,8 @@ import { AppScreen } from '@/components/layout/AppScreen';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { ScreenHeader } from '@/components/layout/ScreenHeader';
 import { Reveal } from '@/components/motion/Reveal';
-import { Rule } from '@/components/surfaces/Rule';
+import { SectionLabel } from '@/components/layout/SectionLabel';
+import { Surface } from '@/components/surfaces/Surface';
 import { useTheme } from '@/providers/ThemeProvider';
 import { stagger } from '@/theme/motion';
 
@@ -125,7 +126,7 @@ export function AddCardScreen({
       ) : null}
 
       {noResults ? (
-        <View style={{ gap: theme.spacing.sm }}>
+        <Surface tone="inset" contentStyle={{ gap: theme.spacing.sm }}>
           <Text style={[theme.textStyles.bodyStrong, { color: theme.colors.text }]}>
             Nothing matches that
           </Text>
@@ -133,16 +134,13 @@ export function AddCardScreen({
             Reward data is still being loaded bank by bank, so a card you hold may not be searchable
             yet. Try the issuer name on its own.
           </Text>
-        </View>
+        </Surface>
       ) : null}
 
       {results.length ? (
         <View style={{ gap: theme.spacing.md }}>
-          <Text style={[theme.textStyles.micro, { color: theme.colors.textFaint }]}>
-            {results.length} {results.length === 1 ? 'match' : 'matches'}
-          </Text>
-          <View>
-            <Rule />
+          <SectionLabel label={results.length === 1 ? 'Match' : 'Matches'} count={results.length} />
+          <Surface padded={false}>
             {results.map((card, index) => (
               <CatalogResult
                 key={card.cardId}
@@ -153,7 +151,7 @@ export function AddCardScreen({
                 onAdd={() => handleAdd(card)}
               />
             ))}
-          </View>
+          </Surface>
         </View>
       ) : null}
 

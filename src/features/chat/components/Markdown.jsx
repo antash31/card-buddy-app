@@ -1,8 +1,8 @@
-// #genai: Renders the Markdown the model writes, on the Statement type scale.
+// #genai: Renders the Markdown the model writes, on the Lumen type scale.
 //
 // Emphasis is expressed by switching font FAMILY, never `fontWeight` or `fontStyle`: the Google
 // Fonts here are static instances with no italic file, so a synthetic slant does nothing on iOS and
-// looks wrong on Android. Bold reads as Golos SemiBold, italic as Golos Medium.
+// looks wrong on Android. Bold reads as Manrope Bold, italic as Manrope SemiBold.
 import * as Linking from 'expo-linking';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
@@ -52,8 +52,10 @@ function Spans({ spans }) {
   ));
 }
 
-function Block({ block }) {
+function Block({ block, color }) {
   const theme = useTheme();
+  // Body colour is the caller's call: a chat bubble wants full ink, a footnote wants muted.
+  const body = color ?? theme.colors.textMuted;
 
   if (block.type === 'divider') return <Rule />;
 
@@ -69,7 +71,7 @@ function Block({ block }) {
   if (block.type === 'quote') {
     return (
       <View style={[styles.edged, { borderLeftColor: theme.colors.border, paddingLeft: theme.spacing.md }]}>
-        <Text style={[theme.textStyles.body, { color: theme.colors.textMuted }]}>
+        <Text style={[theme.textStyles.body, { color: body }]}>
           <Spans spans={block.spans} />
         </Text>
       </View>
@@ -100,12 +102,12 @@ function Block({ block }) {
               style={[
                 theme.textStyles.body,
                 styles.marker,
-                { color: theme.colors.textFaint, fontVariant: ['tabular-nums'] },
+                { color: theme.colors.textMuted, fontVariant: ['tabular-nums'] },
               ]}
             >
               {item.marker}
             </Text>
-            <Text style={[theme.textStyles.body, styles.grow, { color: theme.colors.textMuted }]}>
+            <Text style={[theme.textStyles.body, styles.grow, { color: body }]}>
               <Spans spans={item.spans} />
             </Text>
           </View>
@@ -115,13 +117,13 @@ function Block({ block }) {
   }
 
   return (
-    <Text style={[theme.textStyles.body, { color: theme.colors.textMuted }]}>
+    <Text style={[theme.textStyles.body, { color: body }]}>
       <Spans spans={block.spans} />
     </Text>
   );
 }
 
-export function Markdown({ text, streaming = false }) {
+export function Markdown({ text, streaming = false, color }) {
   const theme = useTheme();
   const blocks = parseMarkdown(streaming ? trimDanglingMarkers(text ?? '') : text);
 
@@ -130,7 +132,7 @@ export function Markdown({ text, streaming = false }) {
   return (
     <View style={{ gap: theme.spacing.md }}>
       {blocks.map((block, index) => (
-        <Block key={index} block={block} />
+        <Block key={index} block={block} color={color} />
       ))}
     </View>
   );
