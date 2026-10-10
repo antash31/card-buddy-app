@@ -20,6 +20,8 @@ import { SectionLabel } from '@/components/layout/SectionLabel';
 import { Reveal } from '@/components/motion/Reveal';
 import { Rule } from '@/components/surfaces/Rule';
 import { Surface } from '@/components/surfaces/Surface';
+import { CardFinderPrompt } from '@/features/card-finder/components/CardFinderPrompt';
+import { CardFinderRow } from '@/features/card-finder/components/CardFinderRow';
 import { CreditHealthRow } from '@/features/credit-health/components/CreditHealthRow';
 import { PointsBankRow } from '@/features/points-bank/components/PointsBankRow';
 import { WalletToolsCard } from '@/features/wallet/components/WalletToolsCard';
@@ -136,6 +138,12 @@ export function CardNestScreen() {
         </Reveal>
       ) : null}
 
+      {empty ? (
+        <Reveal delay={stagger(5)}>
+          <CardFinderPrompt />
+        </Reveal>
+      ) : null}
+
       {cards.length ? (
         <>
           <Reveal delay={stagger(3)}>
@@ -149,7 +157,7 @@ export function CardNestScreen() {
 
           <Reveal delay={stagger(4)} style={{ gap: theme.spacing.md }}>
             <SectionLabel label="Wallet tools" />
-            <WalletToolsCard />
+            <WalletToolsCard>{({ auditDone }) => <CardFinderRow auditDone={auditDone} />}</WalletToolsCard>
           </Reveal>
 
           <Reveal delay={stagger(4)} style={{ gap: theme.spacing.md }}>

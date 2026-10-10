@@ -40,6 +40,7 @@ export default function AppLayout() {
         <Tabs.Screen name="wallet-categories" options={{ href: null }} />
         <Tabs.Screen name="credit-health" options={{ href: null }} />
         <Tabs.Screen name="points-bank" options={{ href: null }} />
+        <Tabs.Screen name="card-finder" options={{ href: null }} />
       </Tabs>
     </>
   );

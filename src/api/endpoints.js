@@ -50,6 +50,12 @@ export const endpoints = {
     balance: (userCardId) => `/points-bank/cards/${userCardId}/balance`,
   },
 
+  recommendations: {
+    root: '/recommendations',
+    form: '/recommendations/form',
+    preview: '/recommendations/preview',
+  },
+
   swipemax: {
     compare: '/swipemax/compare',
     capConsumption: (capId) => `/swipemax/caps/${capId}/consumption`,

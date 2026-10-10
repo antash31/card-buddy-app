@@ -47,6 +47,7 @@ const PARENT_TAB = {
   'wallet-categories': 'index',
   'credit-health': 'index',
   'points-bank': 'index',
+  'card-finder': 'index',
 };
 
 const INNER_PADDING = 6;
