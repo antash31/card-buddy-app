@@ -92,6 +92,19 @@ test('a balance is valued at the best route and, separately, as cash', () => {
   expect(lines[1].detail).toContain('Statement credit');
 });
 
+test('a default route that is only a stated "up to" ceiling is labelled, not shown as certain cash', () => {
+  const lines = valueLines(card({ defaultRoute: route({ valueIsCeiling: true }) }));
+  expect(lines[1]).toMatchObject({ label: 'Up to', amount: 3000 });
+});
+
+test('a single route that is itself a ceiling is labelled "Up to", not "Worth"', () => {
+  const only = route({ valueIsCeiling: true });
+  const lines = valueLines(
+    card({ bestRoute: only, defaultRoute: only, valuation: { atDefault: 3000, atBest: 3000, bestRouteCode: only.code, bestIsLimited: false, belowDefaultMinimum: false } }),
+  );
+  expect(lines[0].label).toBe('Up to');
+});
+
 test('when the best route is the default there is one line, not two', () => {
   const only = route();
   const lines = valueLines(

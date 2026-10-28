@@ -90,9 +90,12 @@ export function valueLines(card) {
   const lines = [];
   const bestIsDefault = defaultRoute && defaultRoute.code === bestRoute.code;
 
+  // "At most" already hedges a route that isn't the default one; "Up to" hedges a route (default or
+  // best) whose own published number is itself a stated ceiling, not a guaranteed rate — the two are
+  // different kinds of uncertainty and can both apply.
   lines.push({
     key: 'best',
-    label: bestIsDefault ? 'Worth' : 'At most',
+    label: bestIsDefault ? (bestRoute.valueIsCeiling ? 'Up to' : 'Worth') : 'At most',
     amount: valuation.atBest,
     detail: `${humanizeCode(bestRoute.code)} · ${perPoint(bestRoute.effectiveValue)} a point${
       valuation.bestIsLimited ? ' · may take more than one redemption' : ''
@@ -102,7 +105,7 @@ export function valueLines(card) {
   if (!bestIsDefault && valuation.atDefault !== null && defaultRoute) {
     lines.push({
       key: 'default',
-      label: 'Taken as cash',
+      label: defaultRoute.valueIsCeiling ? 'Up to' : 'Taken as cash',
       amount: valuation.atDefault,
       detail: `${destinationLabel(defaultRoute.destination) ?? humanizeCode(defaultRoute.code)} · ${perPoint(defaultRoute.effectiveValue)} a point`,
     });
