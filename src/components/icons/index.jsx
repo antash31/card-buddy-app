@@ -321,6 +321,17 @@ export function ShieldIcon(props) {
   );
 }
 
+/** Card Lab — a flask, for looking inside each card. #genai */
+export function FlaskIcon(props) {
+  return (
+    <Glyph {...props}>
+      <Path d="M9 3h6" />
+      <Path d="M10 3v6.2L4.9 18.1A1.9 1.9 0 0 0 6.5 21h11a1.9 1.9 0 0 0 1.6-2.9L14 9.2V3" />
+      <Path d="M7.2 15h9.6" />
+    </Glyph>
+  );
+}
+
 /** Points bank — a stack of coins. */
 export function CoinsIcon(props) {
   return (

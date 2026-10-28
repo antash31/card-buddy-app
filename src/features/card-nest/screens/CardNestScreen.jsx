@@ -21,6 +21,7 @@ import { Reveal } from '@/components/motion/Reveal';
 import { Rule } from '@/components/surfaces/Rule';
 import { Surface } from '@/components/surfaces/Surface';
 import { CardFinderPrompt } from '@/features/card-finder/components/CardFinderPrompt';
+import { CardLabRow } from '@/features/card-lab/components/CardLabRow';
 import { CardFinderRow } from '@/features/card-finder/components/CardFinderRow';
 import { CreditHealthRow } from '@/features/credit-health/components/CreditHealthRow';
 import { PointsBankRow } from '@/features/points-bank/components/PointsBankRow';
@@ -166,6 +167,8 @@ export function CardNestScreen() {
               <CreditHealthRow />
               <Rule inset={theme.spacing.lg + TOOL_ROW_TILE + theme.spacing.md} />
               <PointsBankRow />
+              <Rule inset={theme.spacing.lg + TOOL_ROW_TILE + theme.spacing.md} />
+              <CardLabRow />
             </Surface>
           </Reveal>
 

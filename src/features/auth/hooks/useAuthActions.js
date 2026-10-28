@@ -17,8 +17,6 @@ function useSessionMutation(mutationFn) {
   return useMutation({
     mutationFn,
     onSuccess: async (data) => {
-      // Sign-up with email confirmation enabled returns no session; the screen routes to the
-      // "check your inbox" step instead.
       if (!data?.session) return;
 
       await signedIn(data);
@@ -61,12 +59,5 @@ export function useForgotPassword() {
     mutationFn: authApi.forgotPassword,
     onSuccess: () => haptics.success(),
     onError: () => haptics.error(),
-  });
-}
-
-export function useResendConfirmation() {
-  return useMutation({
-    mutationFn: authApi.resendConfirmation,
-    onSuccess: () => haptics.success(),
   });
 }

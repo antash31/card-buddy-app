@@ -48,6 +48,8 @@ const PARENT_TAB = {
   'credit-health': 'index',
   'points-bank': 'index',
   'card-finder': 'index',
+  'card-lab': 'index',
+  'card-lab-card': 'index',
 };
 
 const INNER_PADDING = 6;

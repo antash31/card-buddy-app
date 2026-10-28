@@ -1,5 +1,5 @@
 /* global test, expect */
-import { daysSince, formatInstantShort, formatShortDate } from './dates';
+import { daysSince, formatInstantShort, formatLongDate, formatShortDate } from './dates';
 
 test('calendar dates are read as dates, never shifted by a time zone', () => {
   expect(formatShortDate('2026-10-12')).toBe('12 Oct');
@@ -20,4 +20,12 @@ test('days since an instant are whole days and never negative', () => {
 test('an instant is shown as a short date', () => {
   expect(formatInstantShort('2026-10-03T12:00:00')).toBe('3 Oct');
   expect(formatInstantShort('nope')).toBe('—');
+});
+
+// #genai
+test('a long date spells the month out and keeps the year', () => {
+  expect(formatLongDate('2026-12-31')).toBe('31 December 2026');
+  expect(formatLongDate('2027-01-01')).toBe('1 January 2027');
+  expect(formatLongDate(null)).toBe('—');
+  expect(formatLongDate('2026-13-01')).toBe('—');
 });

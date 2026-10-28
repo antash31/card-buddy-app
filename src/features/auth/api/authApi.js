@@ -31,10 +31,6 @@ export function forgotPassword(email) {
   return apiClient.post(endpoints.auth.forgotPassword, { email }, { skipAuth: true });
 }
 
-export function resendConfirmation(email) {
-  return apiClient.post(endpoints.auth.resendConfirmation, { email }, { skipAuth: true });
-}
-
 export function updatePassword(password) {
   return apiClient.post(endpoints.auth.updatePassword, { password });
 }

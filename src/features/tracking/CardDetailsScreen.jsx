@@ -47,6 +47,8 @@ export default function CardDetailsScreen() {
       <Text variant="caption" color={theme.colors.textMuted}>Your 10 most recent transactions on this card.</Text>
       <TransactionList loading={query.isPending} error={query.error} events={query.data?.events} onRetry={query.refetch} disconnected={!connections.data?.connections?.length} />
     </Surface>
+    {/* #genai */}
+    <SecondaryButton label="What this card gives you" onPress={() => router.push({ pathname: '/card-lab-card', params: { userCardId } })} />
     <SecondaryButton label="Review transactions" onPress={() => router.push('/transaction-review')} />
     <SecondaryButton label="Transaction tracking" onPress={() => router.push('/tracking')} />
   </AppScreen>;

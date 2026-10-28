@@ -11,7 +11,6 @@ export const endpoints = {
     me: '/auth/me',
     forgotPassword: '/auth/forgot-password',
     updatePassword: '/auth/password',
-    resendConfirmation: '/auth/resend-confirmation',
     oauthUrl: '/auth/oauth/url',
     oauthCallback: '/auth/oauth/callback',
   },
@@ -48,6 +47,10 @@ export const endpoints = {
   pointsBank: {
     overview: '/points-bank',
     balance: (userCardId) => `/points-bank/cards/${userCardId}/balance`,
+  },
+
+  cardLab: {
+    overview: '/card-lab',
   },
 
   recommendations: {

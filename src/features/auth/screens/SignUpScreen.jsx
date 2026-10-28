@@ -61,18 +61,9 @@ export function SignUpScreen() {
       return;
     }
 
-    signUp.mutate(
-      { fullName: fullName.trim(), email: email.trim(), password },
-      {
-        onSuccess: (data) => {
-          // With email confirmation enabled Supabase issues no session; the user has to verify
-          // first. Otherwise the store is already updated and routing takes over.
-          if (data?.requiresEmailConfirmation) {
-            router.replace({ pathname: '/verify-email', params: { email: email.trim() } });
-          }
-        },
-      },
-    );
+    // #genai: Sign-up creates a confirmed user and returns a session immediately; the auth store
+    // and `useAuthGate` handle the redirect into onboarding.
+    signUp.mutate({ fullName: fullName.trim(), email: email.trim(), password });
   };
 
   return (

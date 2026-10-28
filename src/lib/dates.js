@@ -11,6 +11,15 @@ export function formatShortDate(isoDate) {
   return `${day} ${MONTHS[month - 1]}`;
 }
 
+const LONG_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+/** `2026-10-12` → "12 October 2026". For a date someone has to act on, where a short month is one more thing to decode. */
+export function formatLongDate(isoDate) {
+  const [year, month, day] = String(isoDate ?? '').split('-').map(Number);
+  if (!year || !month || !day || month < 1 || month > 12) return '—';
+  return `${day} ${LONG_MONTHS[month - 1]} ${year}`;
+}
+
 /** Whole days from an instant to `now` (never negative). For "entered 90 days ago". */
 export function daysSince(instant, now = new Date()) {
   const then = new Date(instant).getTime();
